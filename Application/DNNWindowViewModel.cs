@@ -13,6 +13,7 @@ using Tensorflow.NumPy;
 using static SharpCV.Binding;
 using static Tensorflow.Binding;
 
+
 namespace MainApp
 {
     public class DNNConfig
@@ -131,6 +132,33 @@ namespace MainApp
             var sess = tf.Session(graph);
             var (prediction_result, probility_result) = sess.run((prediction, probility), (x, x_test));
             print($"Prediction result: {prediction_result}");
+        }
+
+        public Graph ImportGraph()
+        {
+            var graph = new Graph().as_default();
+            graph.Import("test");
+
+            return graph;
+        }
+
+        public void Predict()
+        {
+            var graph = ImportGraph();
+            var imgArr = ReadTensorFromImageFile(Config.Name, graph);
+
+            var sess = tf.Session(graph);
+
+            Tensor x = graph.OperationByName("Input/X");
+            Tensor prediction = graph.OperationByName("Train/Prediction/predictions");
+            Tensor probility = graph.OperationByName("Train/Prediction/prob");
+            Tensor imgTensor = graph.OperationByName("image_tensor");
+
+            Tensor[] outTensorArr = new Tensor[] { x, prediction, probility };
+
+            var (prediction_result, probility_result) = sess.run((prediction, probility), (x, x_test));
+
+            var results = sess.run(outTensorArr, new FeedItem(imgTensor, imgArr));
         }
 
         public string FreezeModel()
@@ -453,7 +481,6 @@ namespace MainApp
                 return layer;
             });
         }
-
         public void Train()
         {
             // Number of training iterations in each epoch
