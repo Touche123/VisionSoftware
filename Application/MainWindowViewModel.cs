@@ -1,5 +1,7 @@
 ﻿using Microsoft.Win32;
+using OneOf.Types;
 using OpenCvSharp;
+using OpenCvSharp.Features2D;
 using OpenCvSharp.Flann;
 using Prism.Commands;
 using Prism.Mvvm;
@@ -12,12 +14,13 @@ using System.Runtime.InteropServices;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Input;
+using Tensorflow;
 
 namespace MainApp
 {
     public class Model
     {
-        public List<ModelData> Data;
+        public List<ModelData> Data = new List<ModelData>();
     }
 
     public class ModelData
@@ -35,11 +38,13 @@ namespace MainApp
         public MainWindowViewModel()
         {
             LoadCommand = new DelegateCommand<string>(LoadExecute);
-            TrainCommand = new DelegateCommand(TrainTemplate);
-            SearchCommand = new DelegateCommand(MatchSearch);
+            TrainCommand = new DelegateCommand(KeyPointTrain);
+            SearchCommand = new DelegateCommand(KeyPointDetect);
             AllocConsole();
 
-            DNNWindowViewModel dNNWindowViewModel = new DNNWindowViewModel();
+            //Test test = new Test();
+
+            //DNNWindowViewModel dNNWindowViewModel = new DNNWindowViewModel();
             //dNNWindowViewModel.Run();
         }
 
@@ -50,8 +55,11 @@ namespace MainApp
         private Mat template;
         private Mat destination;
         private Model model;
-
-        private List<Point> results;
+        private KeyPoint[] templateKeypoints;
+        private KeyPoint[] destinationKeypoints;
+        private Mat templateDescriptors = new Mat();
+        private Mat destinationDescriptors = new Mat();
+        private List<Point> results = new List<Point>();
 
         /// <summary>
         /// Image used to create template
@@ -200,7 +208,7 @@ namespace MainApp
             for (int p = 4; p > 0; p--)
             {
                 Cv2.CvtColor(destination, src, ColorConversionCodes.RGB2GRAY);
-                
+
                 /// use the sobel filter on the source image which returns the gradients in the X (Gx) and Y (Gy) direction.
                 Cv2.Sobel(src, gx, MatType.CV_64F, 1, 0, 3);
                 Cv2.Sobel(src, gy, MatType.CV_64F, 0, 1, 3);
@@ -265,7 +273,7 @@ namespace MainApp
 
                 Cv2.PyrDown(src, src);
             }
-            
+
 
             /// overlay display origin image, edge(green) and center point(red)
             //Cv2.DrawContours(destination, new[] { results.Select(_ => _.Offset.ToPoint() * 8) }, -1, Scalar.LightGreen, 2, offset: center);
@@ -273,6 +281,70 @@ namespace MainApp
             //Trace.TraceInformation($"NCC matching score {resultScore}. time: {stopwatch.Elapsed.TotalMilliseconds} ms");
             //RaisePropertyChanged(nameof(Destination));
             stopwatch.Stop();
+        }
+
+        private void KeyPointTrain()
+        {
+            var sift = SIFT.Create();
+            sift.DetectAndCompute(template, null, out templateKeypoints, templateDescriptors);
+
+        }
+
+        private void KeyPointDetect()
+        {
+            var sift = SIFT.Create();
+
+            sift.DetectAndCompute(destination, null, out destinationKeypoints, destinationDescriptors);
+
+            var bfMatcher = new BFMatcher(NormTypes.L2);
+            var matches = bfMatcher.KnnMatch(templateDescriptors, destinationDescriptors, 2);
+
+            List<DMatch> goodMatches = new List<DMatch>();
+            foreach (DMatch[] m in matches)
+            {
+                if (m[0].Distance < 0.75 * m[1].Distance)
+                {
+                    goodMatches.add(m[0]);
+                }
+            }
+
+            Point2f[] srcPts = goodMatches.Select(m => templateKeypoints[m.QueryIdx].Pt).ToArray();
+            Point2f[] dstPts = goodMatches.Select(m => destinationKeypoints[m.TrainIdx].Pt).ToArray();
+
+            // Convert Point2f arrays to Point arrays
+            Point[] srcPtsArr = Array.ConvertAll(srcPts, pt => new Point((int)pt.X, (int)pt.Y));
+            Point[] dstPtsArr = Array.ConvertAll(dstPts, pt => new Point((int)pt.X, (int)pt.Y));
+
+            var srcPtsMat = new Mat<Point2f>(1, srcPts.Length, srcPts);
+            var dstPtsMat = new Mat<Point2f>(1, dstPts.Length, dstPts);
+
+            Mat status = new Mat();
+            Mat error = new Mat();
+            Size winSize = new Size(15, 15);
+            TermCriteria criteria = new TermCriteria(CriteriaTypes.Count | CriteriaTypes.Eps, 10, 0.03);
+
+            Cv2.CalcOpticalFlowPyrLK(template, destination, srcPtsMat, dstPtsMat, status, error);
+
+            // Print the results
+            Mat resultImg = destination.Clone();
+            for (int i = 0; i < dstPtsMat.Rows; i++)
+            {
+                if (status.Get<byte>(i) == 1)
+                {
+                    Point2f srcPt = srcPtsMat.At<Point2f>(0, i);
+                    Point2f dstPt = dstPtsMat.At<Point2f>(0, i);
+                    // Define the bounding box
+                    Rect bbox = new Rect(new Point((int)dstPt.X - 5, (int)dstPt.Y - 5), new Size(10, 10));
+                    // Draw the bounding box
+                    Cv2.Rectangle(resultImg, bbox, Scalar.Red, 2);
+                    //Cv2.Line(resultImg, srcPtsArr[i], dstPtsArr[i], Scalar.Red, 2);
+                    //Cv2.Circle(resultImg, dstPtsArr[i], 5, Scalar.Blue, -1);
+                    //Console.WriteLine($"Point {i}: ({srcPt.X}, {srcPt.Y}) -> ({dstPt.X}, {dstPt.Y})");
+                }
+            }
+
+            Cv2.ImShow("Result", resultImg);
+            Cv2.WaitKey();
         }
     }
 
