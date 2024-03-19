@@ -8,39 +8,64 @@ using Prism.Mvvm;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+//using System.Drawing;
 using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Input;
+using System.Windows.Controls;
+using System.Windows.Media.Imaging;
 using Tensorflow;
+using System.ComponentModel;
+using System.Collections.ObjectModel;
 
 namespace MainApp
 {
-    public class Model
-    {
-        public List<ModelData> Data = new List<ModelData>();
-    }
-
-    public class ModelData
-    {
-        public int PyramidLevel;
-        public List<PointInfo> Points = new List<PointInfo>();
-    }
-
-    public class MainWindowViewModel : BindableBase
+    public class MainWindowViewModel : BindableBase, INotifyPropertyChanged
     {
         [DllImport("kernel32.dll", SetLastError = true)]
         [return: MarshalAs(UnmanagedType.Bool)]
         static extern bool AllocConsole();
 
-        public MainWindowViewModel()
+		public event PropertyChangedEventHandler? PropertyChanged;
+		private ObservableCollection<BitmapImage> _thumbnails;
+		public ObservableCollection<BitmapImage> Thumbnails
+		{
+			get { return _thumbnails; }
+			set
+			{
+				_thumbnails = value;
+				OnPropertyChanged(nameof(Thumbnails));
+			}
+		}
+
+		private ObservableCollection<object> _selectedImages;
+		public ObservableCollection<object> SelectedImages
+		{
+			get { return _selectedImages; }
+			set
+			{
+				_selectedImages = value;
+				OnPropertyChanged(nameof(SelectedImages));
+                if (_selectedImages.Count != 0)
+    				Ncc.LoadDestination(SelectedImages[0].ToString());
+			}
+		}
+
+        public NCC Ncc { get; set; }
+
+		public MainWindowViewModel()
         {
-            LoadCommand = new DelegateCommand<string>(LoadExecute);
-            TrainCommand = new DelegateCommand(KeyPointTrain);
-            SearchCommand = new DelegateCommand(KeyPointDetect);
-            AllocConsole();
+            Ncc = new NCC();
+            LoadCommand = new DelegateCommand<string>(Ncc.LoadExecute);
+            TrainCommand = new DelegateCommand(Ncc.TrainTemplate);
+            SearchCommand = new DelegateCommand(Ncc.MatchSearch);
+			Thumbnails = new ObservableCollection<BitmapImage>();
+			SelectedImages = new ObservableCollection<object>();
+			LoadImagesFromDirectory("C:\\dev\\c#\\Vision Software\\Application\\bin\\Debug\\net6.0-windows\\assets\\images\\Cognex Block Images");
+			AllocConsole();
 
             //Test test = new Test();
 
@@ -48,304 +73,45 @@ namespace MainApp
             //dNNWindowViewModel.Run();
         }
 
-        public ICommand LoadCommand { get; private set; }
+		
+
+		private void LoadImagesFromDirectory(string directoryPath)
+		{
+			if (Directory.Exists(directoryPath))
+			{
+				string[] imageFiles = Directory.GetFiles(directoryPath, "*.bmp"); // Change the file extension as needed
+
+				foreach (string imagePath in imageFiles)
+				{
+					BitmapImage thumbnail = CreateThumbnail(imagePath, 200, 150); // Create a thumbnail
+					Thumbnails.Add(thumbnail);
+				}
+			}
+		}
+
+		private BitmapImage CreateThumbnail(string imagePath, int width, int height)
+		{
+			using var image = new System.Drawing.Bitmap(imagePath);
+			var thumbnail = image.GetThumbnailImage(width, height, null, IntPtr.Zero);
+			using var ms = new MemoryStream();
+			thumbnail.Save(ms, System.Drawing.Imaging.ImageFormat.Png); // Save the thumbnail in memory stream
+			var bitmapImage = new BitmapImage();
+			bitmapImage.BeginInit();
+			bitmapImage.CacheOption = BitmapCacheOption.OnLoad;
+			bitmapImage.StreamSource = new MemoryStream(ms.ToArray());
+			bitmapImage.EndInit();
+			return bitmapImage;
+		}
+
+		protected virtual void OnPropertyChanged(string propertyName)
+		{
+			PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
+		}
+
+		public ICommand LoadCommand { get; private set; }
         public ICommand TrainCommand { get; private set; }
         public ICommand SearchCommand { get; private set; }
-
-        private Mat template;
-        private Mat destination;
-        private Model model;
-        private KeyPoint[] templateKeypoints;
-        private KeyPoint[] destinationKeypoints;
-        private Mat templateDescriptors = new Mat();
-        private Mat destinationDescriptors = new Mat();
-        private List<Point> results = new List<Point>();
-
-        /// <summary>
-        /// Image used to create template
-        /// </summary>
-        public Mat Template
-        {
-            get { return template; }
-            set
-            {
-                template = value;
-                RaisePropertyChanged();
-            }
-        }
-
-        /// <summary>
-        /// Image to be processed
-        /// </summary>
-        public Mat Destination
-        {
-            get { return destination; }
-            set
-            {
-                destination = value;
-                RaisePropertyChanged();
-            }
-        }
-
-        private List<PointInfo> pointData = new List<PointInfo>();
-
-        /// <summary>
-        /// Load template and destination image
-        /// </summary>
-        /// <param name="i"></param>
-        private void LoadExecute(string i)
-        {
-            OpenFileDialog dialog = new OpenFileDialog();
-            dialog.InitialDirectory = Path.Combine(Path.GetDirectoryName(GetType().Assembly.Location), "assets");
-            dialog.Filter = "All|*.*|jpg|*.jpg|png|*.png|bmp|*.bmp";
-            if (dialog.ShowDialog().Value == true)
-            {
-                if (dialog.CheckFileExists)
-                {
-                    string file = dialog.FileName;
-                    if (i.ToLower().Contains("t"))
-                    {
-                        Template?.Dispose();
-                        Template = new Mat(file);
-                    }
-                    else
-                    {
-                        Destination?.Dispose();
-                        Destination = new Mat(file);
-                    }
-                }
-            }
-        }
-
-        private void TrainTemplate()
-        {
-            model = new Model();
-
-            Mat src = new Mat();
-            Mat output = new Mat();
-            Mat gx = new Mat();
-            Mat gy = new Mat();
-            Mat magnitude = new Mat();
-            Mat direction = new Mat();
-
-            pointData.Clear();
-
-            Cv2.CvtColor(template, src, ColorConversionCodes.RGB2GRAY);
-
-            Cv2.Canny(src, output, 100, 100 * 3);
-            Cv2.FindContours(output, out var contours, out var hierarchy, RetrievalModes.List, ContourApproximationModes.ApproxNone);
-
-            Cv2.Sobel(src, gx, MatType.CV_64F, 1, 0, 3);
-            Cv2.Sobel(src, gy, MatType.CV_64F, 0, 1, 3);
-
-            Cv2.CartToPolar(gx, gy, magnitude, direction);
-
-            var sum = new Point2d(0, 0);
-
-            for (int p = 4; p > 0; p--)
-            {
-                for (int i = 0, m = contours.Length; i < m; i++)
-                {
-                    for (int j = 0, n = contours[i].Length; j < n; j++)
-                    {
-                        var cur = contours[i][j];
-                        var fdx = gx.At<double>(cur.Y, cur.X, 0); // dx
-                        var fdy = gy.At<double>(cur.Y, cur.X, 0); // dy
-                        var der = new Point2d(fdx, fdy); // (dx,dy)
-                        var mag = magnitude.At<double>(cur.Y, cur.X, 0); // √(dx²+dy²)
-                        var dir = direction.At<double>(cur.Y, cur.X, 0); // atan2(dy,dx)
-                        pointData.Add(new PointInfo
-                        {
-                            Point = cur,
-                            Derivative = der,
-                            Direction = dir,
-                            Magnitude = mag == 0 ? 0 : 1 / mag,
-                        });
-                        sum += cur;
-                    }
-                }
-
-                /// update Center and Offset in PointInfo
-                var center = new Point2d(sum.X / pointData.Count, sum.Y / pointData.Count);
-                foreach (var item in pointData)
-                {
-                    item.Update(center);
-                }
-
-                model.Data.Add(new ModelData { PyramidLevel = p, Points = pointData });
-
-                Cv2.PyrDown(src, src);
-            }
-
-            ///// overlay display origin image, edge(green) and center point(red)
-            //Cv2.DrawContours(template, new[] { results.Select(_ => _.Point) }, -1, Scalar.LightGreen, 2);
-            ////Cv2.DrawContours(template, contours, -1, Scalar.LightGreen, 2);
-            //Cv2.Circle(template, center.ToPoint(), 2, Scalar.Red, -1);
-
-            /// update UI
-            //RaisePropertyChanged(nameof(Template));
-
-        }
-
-        /// <summary>
-        /// NCC to find template
-        /// </summary>
-        private void MatchSearch()
-        {
-            Stopwatch stopwatch = new Stopwatch();
-            Trace.TraceInformation("NCC matching start");
-            stopwatch.Start();
-
-            /// convert to gray image
-
-            Mat src = new Mat();
-            Mat gx = new Mat();
-            Mat gy = new Mat();
-            Mat direction = new Mat();
-            Mat magnitude = new Mat();
-
-
-            for (int p = 4; p > 0; p--)
-            {
-                Cv2.CvtColor(destination, src, ColorConversionCodes.RGB2GRAY);
-
-                /// use the sobel filter on the source image which returns the gradients in the X (Gx) and Y (Gy) direction.
-                Cv2.Sobel(src, gx, MatType.CV_64F, 1, 0, 3);
-                Cv2.Sobel(src, gy, MatType.CV_64F, 0, 1, 3);
-
-                /// compute the magnitude and direction
-                Cv2.CartToPolar(gx, gy, magnitude, direction);
-
-                var minScore = 0.7;
-                var greediness = 0.8;
-
-                /// ncc match search
-                long noOfCordinates = pointData.Count;
-                double normMinScore = minScore / noOfCordinates; // normalized min score
-                double normGreediness = (1 - greediness * minScore) / (1 - greediness) / noOfCordinates;
-                double partialScore = 0;
-                double resultScore = 0;
-                Point center = new Point();
-
-                for (int i = 0, h = src.Height; i < h; i++)
-                {
-                    for (int j = 0, w = src.Width; j < w; j++)
-                    {
-                        double partialSum = 0;
-                        for (var m = 0; m < noOfCordinates; m++)
-                        {
-                            var item = pointData[m];
-                            var curX = (int)(j + item.Offset.X);
-                            var curY = (int)(i + item.Offset.Y);
-                            var iTx = item.Derivative.X;
-                            var iTy = item.Derivative.Y;
-                            if (curX < 0 || curY < 0 || curY > src.Height - 1 || curX > src.Width - 1)
-                                continue;
-
-                            var iSx = gx.At<double>(curY, curX, 0);
-                            var iSy = gy.At<double>(curY, curX, 0);
-
-                            if ((iSx != 0 || iSy != 0) && (iTx != 0 || iTy != 0))
-                            {
-                                var mag = magnitude.At<double>(curY, curX, 0);
-                                var matGradMag = mag == 0 ? 0 : 1 / mag; // 1/√(dx²+dy²)
-                                partialSum += ((iSx * iTx) + (iSy * iTy)) * (item.Magnitude * matGradMag);
-                            }
-
-                            var sumOfCoords = m + 1;
-                            partialScore = partialSum / sumOfCoords;
-                            /// check termination criteria
-                            /// if partial score score is less than the score than needed to make the required score at that position
-                            /// break serching at that coordinate.
-                            if (partialScore < Math.Min((minScore - 1) + normGreediness * sumOfCoords, normMinScore * sumOfCoords))
-                                break;
-                        }
-                        if (partialScore > resultScore)
-                        {
-                            resultScore = partialScore;
-                            center.X = j * 8;
-                            center.Y = i * 8;
-
-                            results.Add(center);
-                        }
-                    }
-                }
-
-                Cv2.PyrDown(src, src);
-            }
-
-
-            /// overlay display origin image, edge(green) and center point(red)
-            //Cv2.DrawContours(destination, new[] { results.Select(_ => _.Offset.ToPoint() * 8) }, -1, Scalar.LightGreen, 2, offset: center);
-            //Cv2.Circle(destination, center, 5, Scalar.Red, -1);
-            //Trace.TraceInformation($"NCC matching score {resultScore}. time: {stopwatch.Elapsed.TotalMilliseconds} ms");
-            //RaisePropertyChanged(nameof(Destination));
-            stopwatch.Stop();
-        }
-
-        private void KeyPointTrain()
-        {
-            var sift = SIFT.Create();
-            sift.DetectAndCompute(template, null, out templateKeypoints, templateDescriptors);
-
-        }
-
-        private void KeyPointDetect()
-        {
-            var sift = SIFT.Create();
-
-            sift.DetectAndCompute(destination, null, out destinationKeypoints, destinationDescriptors);
-
-            var bfMatcher = new BFMatcher(NormTypes.L2);
-            var matches = bfMatcher.KnnMatch(templateDescriptors, destinationDescriptors, 2);
-
-            List<DMatch> goodMatches = new List<DMatch>();
-            foreach (DMatch[] m in matches)
-            {
-                if (m[0].Distance < 0.75 * m[1].Distance)
-                {
-                    goodMatches.add(m[0]);
-                }
-            }
-
-            Point2f[] srcPts = goodMatches.Select(m => templateKeypoints[m.QueryIdx].Pt).ToArray();
-            Point2f[] dstPts = goodMatches.Select(m => destinationKeypoints[m.TrainIdx].Pt).ToArray();
-
-            // Convert Point2f arrays to Point arrays
-            Point[] srcPtsArr = Array.ConvertAll(srcPts, pt => new Point((int)pt.X, (int)pt.Y));
-            Point[] dstPtsArr = Array.ConvertAll(dstPts, pt => new Point((int)pt.X, (int)pt.Y));
-
-            var srcPtsMat = new Mat<Point2f>(1, srcPts.Length, srcPts);
-            var dstPtsMat = new Mat<Point2f>(1, dstPts.Length, dstPts);
-
-            Mat status = new Mat();
-            Mat error = new Mat();
-            Size winSize = new Size(15, 15);
-            TermCriteria criteria = new TermCriteria(CriteriaTypes.Count | CriteriaTypes.Eps, 10, 0.03);
-
-            Cv2.CalcOpticalFlowPyrLK(template, destination, srcPtsMat, dstPtsMat, status, error);
-
-            // Print the results
-            Mat resultImg = destination.Clone();
-            for (int i = 0; i < dstPtsMat.Rows; i++)
-            {
-                if (status.Get<byte>(i) == 1)
-                {
-                    Point2f srcPt = srcPtsMat.At<Point2f>(0, i);
-                    Point2f dstPt = dstPtsMat.At<Point2f>(0, i);
-                    // Define the bounding box
-                    Rect bbox = new Rect(new Point((int)dstPt.X - 5, (int)dstPt.Y - 5), new Size(10, 10));
-                    // Draw the bounding box
-                    Cv2.Rectangle(resultImg, bbox, Scalar.Red, 2);
-                    //Cv2.Line(resultImg, srcPtsArr[i], dstPtsArr[i], Scalar.Red, 2);
-                    //Cv2.Circle(resultImg, dstPtsArr[i], 5, Scalar.Blue, -1);
-                    //Console.WriteLine($"Point {i}: ({srcPt.X}, {srcPt.Y}) -> ({dstPt.X}, {dstPt.Y})");
-                }
-            }
-
-            Cv2.ImShow("Result", resultImg);
-            Cv2.WaitKey();
-        }
+        
     }
 
     public class PointInfo

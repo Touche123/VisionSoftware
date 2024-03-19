@@ -50,13 +50,14 @@
             <Grid.RowDefinitions>
                 <RowDefinition Height="Auto" />
                 <RowDefinition Height="*" />
+                <RowDefinition Height="*" />
             </Grid.RowDefinitions>
             <Menu>
                 <MenuItem Command="{Binding LoadCommand}"
                           CommandParameter="source" Header="Load Destination" />
                 <MenuItem Command="{Binding SearchCommand}" Header="NCC Match Search" />
             </Menu>
-            <InkCanvas Grid.Row="1">
+            <InkCanvas Grid.Row="1" Margin="0,0,0,26">
                 <InkCanvas.Background>
                     <VisualBrush Stretch="Uniform">
                         <VisualBrush.Visual>
@@ -65,6 +66,32 @@
                     </VisualBrush>
                 </InkCanvas.Background>
             </InkCanvas>
+            <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Auto">
+                <ListBox ItemsSource="{Binding Thumbnails}" SelectionMode="Extended"
+                     SelectionChanged="ListBox_SelectionChanged">
+                    <ListBox.ItemsPanel>
+                        <ItemsPanelTemplate>
+                            <WrapPanel Orientation="Horizontal" />
+                        </ItemsPanelTemplate>
+                    </ListBox.ItemsPanel>
+                    <ListBox.ItemTemplate>
+                        <DataTemplate>
+                            <Image Source="{Binding}" Margin="5" Width="200" Height="150" Stretch="Uniform">
+                                <Image.Style>
+                                    <Style TargetType="Image">
+                                        <Setter Property="Cursor" Value="Hand"/>
+                                        <Style.Triggers>
+                                            <Trigger Property="IsMouseOver" Value="True">
+                                                <Setter Property="Opacity" Value="0.8"/>
+                                            </Trigger>
+                                        </Style.Triggers>
+                                    </Style>
+                                </Image.Style>
+                            </Image>
+                        </DataTemplate>
+                    </ListBox.ItemTemplate>
+                </ListBox>
+            </ScrollViewer>
         </Grid>
         <Button Content="Button" HorizontalAlignment="Left" Height="32" Margin="60,776,0,0" VerticalAlignment="Top" Width="136"/>
     </Grid>

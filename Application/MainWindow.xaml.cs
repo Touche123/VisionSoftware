@@ -24,5 +24,18 @@ namespace MainApp
         {
             InitializeComponent();
         }
-    }
+
+		public void ListBox_SelectionChanged(object sender, SelectionChangedEventArgs e)
+		{
+			if (sender is ListBox listBox && listBox.DataContext is MainWindowViewModel viewModel)
+			{
+				viewModel.SelectedImages.Clear();
+				foreach (var item in listBox.SelectedItems)
+				{
+					viewModel.SelectedImages.Add(item);
+					//viewModel.Ncc.Destination = viewModel.SelectedImages[0];
+				}
+			}
+		}
+	}
 }
