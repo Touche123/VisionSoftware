@@ -58,6 +58,23 @@ namespace MainApp
 
         public NCC Ncc { get; set; }
 		private Mat destination;
+		private double canvasWidth;
+		private double canvasHeight;
+		private double zoomViewboxWidth;
+		private double zoomViewboxHeight;
+		UserControl _toolContent;
+		InspectModel _inspectModel;
+
+		public UserControl ToolContent
+		{
+			get { return _toolContent; }
+			set 
+			{ 
+				_toolContent = value;
+				OnPropertyChanged(nameof(ToolContent));
+			}
+		}
+
 		Mat Template { get; set; }
 		/// <summary>
 		/// Image to be processed
@@ -68,14 +85,98 @@ namespace MainApp
 			set
 			{
 				destination = value;
+				CanvasWidth = destination.Width;
+				CanvasHeight = destination.Height;
+				ZoomViewboxWidth = destination.Width;
+				ZoomViewboxHeight = destination.Height;
+
 				OnPropertyChanged(nameof(Destination));
 			}
 		}
 
+		public void MenuSelectCommandExecute(string context)
+		{
+			switch (context)
+			{
+				case "image":
+					ToolContent = new UserControl_Image();
+					break;
+				case "inspect":
+					ToolContent = new UserControl_Inspect(_inspectModel);
+					break;
+
+				default:
+					break;
+			}
+		}
+		public double CanvasWidth
+		{
+			get { return canvasWidth; }
+			set
+			{
+				canvasWidth = value;
+				OnPropertyChanged(nameof(CanvasWidth));
+			}
+		}
+
+		public double CanvasHeight
+		{
+			get { return canvasHeight; }
+			set
+			{
+				canvasHeight = value;
+				OnPropertyChanged(nameof(CanvasHeight));
+			}
+		}
+
+		public double ZoomViewboxWidth
+		{
+			get { return zoomViewboxWidth; }
+			set
+			{
+				if (zoomViewboxWidth != value)
+				{
+					zoomViewboxWidth = value;
+					OnPropertyChanged(nameof(ZoomViewboxWidth));
+				}
+			}
+		}
+
+		public double ZoomViewboxHeight
+		{
+			get { return zoomViewboxHeight; }
+			set
+			{
+				if (zoomViewboxHeight != value)
+				{
+					zoomViewboxHeight = value;
+					OnPropertyChanged(nameof(ZoomViewboxHeight));
+				}
+			}
+		}
+
+		public void OnMouseWheel(int delta)
+		{
+
+			double zoomIncrement = 10 * (ZoomViewboxWidth + ZoomViewboxHeight) / 200;
+
+			UpdateViewBox(delta > 0 ? zoomIncrement : -zoomIncrement);
+		}
+
+		private void UpdateViewBox(double newValue)
+		{
+			if ((ZoomViewboxWidth >= 0) && ZoomViewboxHeight >= 0)
+			{
+				ZoomViewboxWidth += newValue;
+				ZoomViewboxHeight += newValue;
+			}
+		}
 
 		public MainWindowViewModel()
         {
+			
             Ncc = new NCC();
+			_inspectModel = new InspectModel();
 			//LoadCommand = new DelegateCommand<string>(Ncc.LoadExecute);
 			LoadCommand = new DelegateCommand<string>(LoadExecute);
 			TrainCommand = new DelegateCommand(Ncc.TrainTemplate);
@@ -83,6 +184,7 @@ namespace MainApp
 			SearchCommand = new DelegateCommand(SurfTest);
 			Thumbnails = new ObservableCollection<BitmapImage>();
 			SelectedImages = new ObservableCollection<object>();
+			MenuSelectCommand = new DelegateCommand<string>(MenuSelectCommandExecute);
 			LoadImagesFromDirectory("C:\\dev\\c#\\Vision Software\\Application\\bin\\Debug\\net6.0-windows\\assets\\images\\Cognex Block Images");
 			AllocConsole();
 
@@ -231,6 +333,7 @@ namespace MainApp
 		public ICommand LoadCommand { get; private set; }
         public ICommand TrainCommand { get; private set; }
         public ICommand SearchCommand { get; private set; }
+		public ICommand MenuSelectCommand { get; private set; }
         
     }
 

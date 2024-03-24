@@ -23,4 +23,10 @@
     <PackageReference Include="TensorFlow.NET" Version="0.150.0" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Compile Update="UserControl_Image.xaml.cs">
+      <SubType>Code</SubType>
+    </Compile>
+  </ItemGroup>
+
 </Project>

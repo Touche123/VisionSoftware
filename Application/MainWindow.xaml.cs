@@ -37,5 +37,18 @@ namespace MainApp
 				}
 			}
 		}
+
+		private void ZoomViewbox_OnMouseWheel(object sender, MouseWheelEventArgs e)
+		{
+			if (DataContext is MainWindowViewModel viewModel)
+			{
+				viewModel.OnMouseWheel(e.Delta);
+			}
+		}
+
+		private void ScrollViewer_PreviewMouseWheel(object sender, MouseWheelEventArgs e)
+		{
+			e.Handled = true;
+		}
 	}
 }
