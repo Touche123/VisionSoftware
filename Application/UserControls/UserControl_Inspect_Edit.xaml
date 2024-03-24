@@ -8,11 +8,22 @@
              mc:Ignorable="d" 
              d:DesignHeight="450" d:DesignWidth="800">
     <Grid>
-        <Grid.RowDefinitions>
-            <RowDefinition></RowDefinition>
-            <RowDefinition></RowDefinition>
-        </Grid.RowDefinitions>
-        <Label Grid.Row="0" Content="{Binding SelectedToolName}"></Label>
-        <Label Grid.Row="1">Fuck you</Label>
+        
+        <Grid>
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition></ColumnDefinition>
+                <ColumnDefinition></ColumnDefinition>
+                <ColumnDefinition></ColumnDefinition>
+                <ColumnDefinition></ColumnDefinition>
+                <ColumnDefinition></ColumnDefinition>
+            </Grid.ColumnDefinitions>
+            <Button Grid.Column="0" Width="20" Height="20" Click="Button_Click"></Button>
+            <Label Grid.Column="1">Stupid icon</Label>
+            <Label Grid.Column="2" Content="{Binding SelectedToolName}"></Label>
+            <Label Grid.Column="3" Content="Score"></Label>
+            <Label Grid.Column="4" Content="Time"></Label>
+            <Button Grid.Column="5" Width="20" Height="20" Command="{Binding EditCommand}" Click="Button_Click_Delete">Delete</Button>
+            <!--<Label Grid.Column="1" Content="Fuck"></Label>-->
+         </Grid>
     </Grid>
 </UserControl>

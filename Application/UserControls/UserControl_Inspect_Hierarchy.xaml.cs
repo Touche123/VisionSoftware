@@ -43,12 +43,62 @@ namespace MainApp
 
 		private void Button_Click(object sender, RoutedEventArgs e)
 		{
-			_inspectModel.Tools.Remove(_inspectModel.SelectedTool);
+			
 		}
 
 		private void Button_Edit_Click(object sender, RoutedEventArgs e)
 		{
-			_userControlInspect.ContentControl.Content = new UserControl_Inspect_Edit(_inspectModel.SelectedTool);
+			// Find the parent ListViewItem of the clicked child item
+			ListViewItem parentListViewItem = FindParent<ListViewItem>((DependencyObject)sender);
+
+			if (parentListViewItem != null)
+			{
+				// Select the parent ListViewItem
+				//parentListViewItem.IsSelected = true;
+
+				ITool tool = parentListViewItem.DataContext as ITool;
+
+				if (tool != null)
+				{
+					_inspectModel.SelectedTool = tool;
+				}
+
+			}
+
+			_userControlInspect.ContentControl.Content = new UserControl_Inspect_Edit(_userControlInspect, _inspectModel);
+		}
+
+		private void Button_Click_Delete(object sender, RoutedEventArgs e)
+		{
+			// Find the parent ListViewItem of the clicked child item
+			ListViewItem parentListViewItem = FindParent<ListViewItem>((DependencyObject)sender);
+
+			if (parentListViewItem != null)
+			{
+				// Select the parent ListViewItem
+				//parentListViewItem.IsSelected = true;
+
+				ITool tool = parentListViewItem.DataContext as ITool;
+
+				if (tool != null)
+				{
+					_inspectModel.Tools.Remove(tool);
+				}
+				
+			}
+			
+		}
+
+		// Helper method to find the parent ListViewItem
+		private T FindParent<T>(DependencyObject child) where T : DependencyObject
+		{
+			DependencyObject parentObject = VisualTreeHelper.GetParent(child);
+
+			if (parentObject == null)
+				return null;
+
+			T parent = parentObject as T;
+			return parent ?? FindParent<T>(parentObject);
 		}
 	}
 }

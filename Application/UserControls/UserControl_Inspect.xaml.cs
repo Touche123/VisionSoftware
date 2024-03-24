@@ -1,4 +1,5 @@
-﻿using Prism.Commands;
+﻿using MainApp.UserControls;
+using Prism.Commands;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -57,7 +58,8 @@ namespace MainApp
 
 		private void Button_Click(object sender, RoutedEventArgs e)
 		{
-            InspectModel.Tools.Add(new PatternTool());
+			ContentControl = new UserControl_Inspect_Add(this, InspectModel);
+            //InspectModel.Tools.Add(new PatternTool());
 		}
 
 	}
