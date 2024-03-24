@@ -133,7 +133,7 @@ namespace MainApp
 					ToolContent = new UserControl_Image();
 					break;
 				case "inspect":
-					ToolContent = new UserControl_Inspect(_inspectModel);
+					ToolContent = new UserControl_Inspect(Destination, _inspectModel);
 					break;
 
 				default:
