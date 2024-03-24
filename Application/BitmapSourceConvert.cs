@@ -2,6 +2,7 @@
 using OpenCvSharp.WpfExtensions;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Globalization;
 using System.Linq;
 using System.Text;
@@ -23,6 +24,9 @@ namespace MainApp
         /// <returns></returns>
         public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
         {
+            //if (Debugger.IsAttached)
+            //    Debugger.Break();
+
             if (value is Mat mat)
             {
                 return mat.ToBitmapSource();
@@ -40,7 +44,10 @@ namespace MainApp
         /// <returns></returns>
         public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
         {
-            if (value is BitmapSource bitmap)
+			//if (Debugger.IsAttached)
+			//	Debugger.Break();
+
+			if (value is BitmapSource bitmap)
             {
                 return bitmap.ToMat();
             }

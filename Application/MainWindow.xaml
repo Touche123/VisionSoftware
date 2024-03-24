@@ -14,85 +14,132 @@
     <Window.DataContext>
         <local:MainWindowViewModel/>
     </Window.DataContext>
-    <Grid Margin="0,0,0,0">
+
+    <Grid>
         <Grid.ColumnDefinitions>
-            <ColumnDefinition Width="*" />
-            <ColumnDefinition Width="Auto" />
-            <ColumnDefinition Width="*" />
+            <ColumnDefinition></ColumnDefinition>
         </Grid.ColumnDefinitions>
-        <Grid Grid.Column="0">
-            <Grid.RowDefinitions>
-                <RowDefinition Height="Auto" />
-                <RowDefinition Height="*" />
-                <RowDefinition Height="*" />
-            </Grid.RowDefinitions>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"></RowDefinition>
+            <RowDefinition Height="Auto"></RowDefinition>
+            <RowDefinition Height="*"></RowDefinition>
+            <RowDefinition Height="Auto"></RowDefinition>
+        </Grid.RowDefinitions>
+        <Menu Grid.Row="0">
+            <MenuItem Header="File"></MenuItem>
+            <MenuItem Header="Sensor"></MenuItem>
+            <MenuItem Header="View"></MenuItem>
+        </Menu>
+        <ToolBarTray Grid.Row="1">
+            <ToolBar>
+                <Button Content="New"></Button>
+                <Button Content="Open"></Button>
+                <Button Content="Save"></Button>
+            </ToolBar>
+            <ToolBar>
+                <Button Content="Trigger"></Button>
+                <Button Content="Trigger Continously"></Button>
+                <Button Content="Live"></Button>
+                <Separator ></Separator>
+                <Button Content="Online"></Button>
+            </ToolBar>
+            <ToolBar>
+                <Button Content="Copy"></Button>
+                <Button Content="Pase"></Button>
+                <Button Content="Undo"></Button>
+                <Button Content="Redo"></Button>
+            </ToolBar>
+            <ToolBar>
+                <Button Content="Zoom+"></Button>
+                <Button Content="Zoom-"></Button>
+                <Button Content="Zoom to region"></Button>
+                <Button Content="Fit all"></Button>
+            </ToolBar>
+        </ToolBarTray>
+        <Grid Grid.Row="2">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="Auto"></ColumnDefinition>
+                <ColumnDefinition></ColumnDefinition>
+                <ColumnDefinition Width="Auto"></ColumnDefinition>
+            </Grid.ColumnDefinitions>
+            <StackPanel Grid.Column="0" Background="#FFAFAFAF">
+                <StackPanel.Resources>
+                    <Style TargetType="{x:Type Button }">
+                        <Setter Property="Margin" Value="10, 5, 10, 0"/>
+                        <Setter Property="Width" Value="90"></Setter>
+                        <Setter Property="Height" Value="70"></Setter>
+                    </Style>
+                </StackPanel.Resources>
+                <Button Content="Image"></Button>
+                <Button Content="Inspect"></Button>
+                <Button Content="Communication"></Button>
+                <Button Content="Inputs/Outputs"></Button>
+                <Button Content="HMI"></Button>
+            </StackPanel>
 
-            <Menu>
-                <MenuItem Command="{Binding LoadCommand}"
-                      CommandParameter="template" Header="Load Template" />
-                <MenuItem Command="{Binding TrainCommand}" Header="Train Template"/>
-            </Menu>
-
-            <InkCanvas Grid.Row="1">
-                <InkCanvas.Background>
-                    <VisualBrush Stretch="Uniform">
-                        <VisualBrush.Visual>
-                            <Image Source="{Binding Template, Converter={StaticResource BitmapSourceConvert}}" />
-                        </VisualBrush.Visual>
-                    </VisualBrush>
-                </InkCanvas.Background>
-            </InkCanvas>
-        </Grid>
-        <GridSplitter Grid.Column="1" Width="3"
-                      HorizontalAlignment="Center" HorizontalContentAlignment="Center"
-                      Background="Gray" />
-        <Grid Grid.Column="2">
-            <Grid.RowDefinitions>
-                <RowDefinition Height="Auto" />
-                <RowDefinition Height="*" />
-                <RowDefinition Height="*" />
-            </Grid.RowDefinitions>
-            <Menu>
-                <MenuItem Command="{Binding LoadCommand}"
-                          CommandParameter="source" Header="Load Destination" />
-                <MenuItem Command="{Binding SearchCommand}" Header="NCC Match Search" />
-            </Menu>
-            <InkCanvas Grid.Row="1" Margin="0,0,0,26">
-                <InkCanvas.Background>
-                    <VisualBrush Stretch="Uniform">
-                        <VisualBrush.Visual>
-                            <Image Source="{Binding Destination, Converter={StaticResource BitmapSourceConvert}}" />
-                        </VisualBrush.Visual>
-                    </VisualBrush>
-                </InkCanvas.Background>
-            </InkCanvas>
-            <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Auto">
-                <ListBox ItemsSource="{Binding Thumbnails}" SelectionMode="Extended"
+            <Grid Grid.Column="1">
+                <Grid.RowDefinitions>
+                    <RowDefinition></RowDefinition>
+                    <RowDefinition Height="Auto"></RowDefinition>
+                    <RowDefinition Height="Auto"></RowDefinition>
+                </Grid.RowDefinitions>
+                <ScrollViewer Grid.Row="0">
+                    <InkCanvas Margin="0,0,0,0" IsEnabled="False">
+                        <InkCanvas.Background>
+                            <VisualBrush Stretch="Uniform">
+                                <VisualBrush.Visual>
+                                    <Image Source="{Binding Destination, Converter={StaticResource BitmapSourceConvert}}" />
+                                </VisualBrush.Visual>
+                            </VisualBrush>
+                        </InkCanvas.Background>
+                    </InkCanvas>
+                </ScrollViewer>
+                    
+                
+                <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Auto">
+                    <ListBox ItemsSource="{Binding Thumbnails}" SelectionMode="Extended"
                      SelectionChanged="ListBox_SelectionChanged">
-                    <ListBox.ItemsPanel>
-                        <ItemsPanelTemplate>
-                            <WrapPanel Orientation="Horizontal" />
-                        </ItemsPanelTemplate>
-                    </ListBox.ItemsPanel>
-                    <ListBox.ItemTemplate>
-                        <DataTemplate>
-                            <Image Source="{Binding}" Margin="5" Width="200" Height="150" Stretch="Uniform">
-                                <Image.Style>
-                                    <Style TargetType="Image">
-                                        <Setter Property="Cursor" Value="Hand"/>
-                                        <Style.Triggers>
-                                            <Trigger Property="IsMouseOver" Value="True">
-                                                <Setter Property="Opacity" Value="0.8"/>
-                                            </Trigger>
-                                        </Style.Triggers>
-                                    </Style>
-                                </Image.Style>
-                            </Image>
-                        </DataTemplate>
-                    </ListBox.ItemTemplate>
-                </ListBox>
-            </ScrollViewer>
+                        <ListBox.ItemsPanel>
+                            <ItemsPanelTemplate>
+                                <WrapPanel Orientation="Horizontal" />
+                            </ItemsPanelTemplate>
+                        </ListBox.ItemsPanel>
+                        <ListBox.ItemTemplate>
+                            <DataTemplate>
+                                <Image Source="{Binding}" Margin="5" Width="200" Height="150" Stretch="Uniform">
+                                    <Image.Style>
+                                        <Style TargetType="Image">
+                                            <Setter Property="Cursor" Value="Hand"/>
+                                            <Style.Triggers>
+                                                <Trigger Property="IsMouseOver" Value="True">
+                                                    <Setter Property="Opacity" Value="0.8"/>
+                                                </Trigger>
+                                            </Style.Triggers>
+                                        </Style>
+                                    </Image.Style>
+                                </Image>
+                            </DataTemplate>
+                        </ListBox.ItemTemplate>
+                    </ListBox>
+                </ScrollViewer>
+            </Grid>
+
+            <StackPanel Grid.Column="2" Background="#FFAFAFAF">
+                <StackPanel.Resources>
+                    <Style TargetType="{x:Type Button }">
+                        <Setter Property="Margin" Value="10, 5, 10, 0"/>
+                        <Setter Property="Width" Value="90"></Setter>
+                        <Setter Property="Height" Value="70"></Setter>
+                    </Style>
+                </StackPanel.Resources>
+                <Button Content="Load Template" Command="{Binding LoadCommand}" CommandParameter="template"></Button>
+                <Button Content="Load Destination" Command="{Binding LoadCommand}" CommandParameter="source"></Button>
+            </StackPanel>
         </Grid>
-        <Button Content="Button" HorizontalAlignment="Left" Height="32" Margin="60,776,0,0" VerticalAlignment="Top" Width="136"/>
+
+        <Grid x:Name="StatusBar" Grid.Row="3">
+            <Label>Status</Label>
+        </Grid>
     </Grid>
+    
 </Window>
