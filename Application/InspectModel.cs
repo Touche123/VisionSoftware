@@ -12,16 +12,26 @@ namespace MainApp
 
     public interface ITool
     {
-
+        string Name { get; }
     }
 
-    public class PatternTool : ITool
-    {
-
-    }
-
-    public class InspectModel : BindableBase
+	public class PatternTool : ITool
 	{
+		public string Name
+		{
+			get { return "Pattern"; }
+		}
+	}
+
+	public class InspectModel : BindableBase
+	{
+		private ITool _selectedTool;
+		public ITool SelectedTool
+		{
+			get { return _selectedTool; }
+			set { _selectedTool = value; }
+		}
+
 		public event PropertyChangedEventHandler? PropertyChanged;
         private ObservableCollection<ITool> _tools; 
 		public ObservableCollection<ITool> Tools

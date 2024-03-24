@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Prism.Commands;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -20,7 +21,15 @@ namespace MainApp
     /// </summary>
     public partial class UserControl_Inspect : UserControl
 	{
-        private InspectModel _inspectModel;
+		UserControl _inspectContent;
+		public UserControl InspectContent
+		{
+			get { return _inspectContent; }
+			set
+			{
+				_inspectContent = value;
+			}
+		}
 
         public InspectModel InspectModel
         {
@@ -28,18 +37,28 @@ namespace MainApp
 			set { SetValue(InspectModelProperty, value); }
 		}
 
+		public ContentControl ContentControl
+		{
+			get { return (ContentControl)GetValue(ContentControlProperty); }
+			set { SetValue(ContentControlProperty, value); }
+		}
+
 		public static readonly DependencyProperty InspectModelProperty =
 		DependencyProperty.Register("InspectModel", typeof(InspectModel), typeof(UserControl_Inspect));
+		public static readonly DependencyProperty ContentControlProperty =
+		DependencyProperty.Register("ContentControl", typeof(ContentControl), typeof(UserControl_Inspect));
 
 		public UserControl_Inspect(InspectModel inspectModel)
         {
             InitializeComponent();
 			InspectModel = inspectModel;
+			ContentControl = new UserControl_Inspect_Hierarchy(this, InspectModel);
 		}
 
 		private void Button_Click(object sender, RoutedEventArgs e)
 		{
             InspectModel.Tools.Add(new PatternTool());
 		}
+
 	}
 }

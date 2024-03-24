@@ -24,7 +24,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Compile Update="UserControl_Image.xaml.cs">
+    <Compile Update="UserControls\UserControl_Image.xaml.cs">
       <SubType>Code</SubType>
     </Compile>
   </ItemGroup>
