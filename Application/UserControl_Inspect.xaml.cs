@@ -20,9 +20,26 @@ namespace MainApp
     /// </summary>
     public partial class UserControl_Inspect : UserControl
 	{
-        public UserControl_Inspect(InspectModel inspectModel)
+        private InspectModel _inspectModel;
+
+        public InspectModel InspectModel
+        {
+            get { return (InspectModel)GetValue(InspectModelProperty); }
+			set { SetValue(InspectModelProperty, value); }
+		}
+
+		public static readonly DependencyProperty InspectModelProperty =
+		DependencyProperty.Register("InspectModel", typeof(InspectModel), typeof(UserControl_Inspect));
+
+		public UserControl_Inspect(InspectModel inspectModel)
         {
             InitializeComponent();
+			InspectModel = inspectModel;
 		}
-    }
+
+		private void Button_Click(object sender, RoutedEventArgs e)
+		{
+            InspectModel.Tools.Add(new PatternTool());
+		}
+	}
 }

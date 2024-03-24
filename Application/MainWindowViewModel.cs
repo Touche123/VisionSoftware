@@ -25,6 +25,37 @@ using OpenCvSharp.XFeatures2D;
 
 namespace MainApp
 {
+	public class Thumbnail : BindableBase
+	{
+		private string _imagePath;
+		private BitmapImage _image;
+
+		public event PropertyChangedEventHandler? PropertyChanged;
+
+		public string ImagePath
+		{
+			get { return _imagePath; }
+			set 
+			{ 
+				_imagePath = value;
+				OnPropertyChanged(nameof(ImagePath));
+			}
+		}
+		public BitmapImage Image
+		{
+			get { return _image; }
+			set 
+			{ 
+				_image = value;
+				OnPropertyChanged(nameof(Image));
+			}
+		}
+		protected virtual void OnPropertyChanged(string propertyName)
+		{
+			PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
+		}
+	}
+
     public class MainWindowViewModel : BindableBase, INotifyPropertyChanged
     {
         [DllImport("kernel32.dll", SetLastError = true)]
@@ -32,8 +63,8 @@ namespace MainApp
         static extern bool AllocConsole();
 
 		public event PropertyChangedEventHandler? PropertyChanged;
-		private ObservableCollection<BitmapImage> _thumbnails;
-		public ObservableCollection<BitmapImage> Thumbnails
+		private ObservableCollection<Thumbnail> _thumbnails;
+		public ObservableCollection<Thumbnail> Thumbnails
 		{
 			get { return _thumbnails; }
 			set
@@ -182,7 +213,7 @@ namespace MainApp
 			TrainCommand = new DelegateCommand(Ncc.TrainTemplate);
             //SearchCommand = new DelegateCommand(Ncc.MatchSearch);
 			SearchCommand = new DelegateCommand(SurfTest);
-			Thumbnails = new ObservableCollection<BitmapImage>();
+			Thumbnails = new ObservableCollection<Thumbnail>();
 			SelectedImages = new ObservableCollection<object>();
 			MenuSelectCommand = new DelegateCommand<string>(MenuSelectCommandExecute);
 			LoadImagesFromDirectory("C:\\dev\\c#\\Vision Software\\Application\\bin\\Debug\\net6.0-windows\\assets\\images\\Cognex Block Images");
@@ -305,7 +336,10 @@ namespace MainApp
 
 				foreach (string imagePath in imageFiles)
 				{
-					BitmapImage thumbnail = CreateThumbnail(imagePath, 200, 150); // Create a thumbnail
+					Thumbnail thumbnail = new Thumbnail();
+					thumbnail.ImagePath = Path.GetFileName(imagePath);
+					thumbnail.Image = CreateThumbnail(imagePath, 200, 150); // Create a thumbnail
+					//BitmapImage thumbnail = CreateThumbnail(imagePath, 200, 150); // Create a thumbnail
 					Thumbnails.Add(thumbnail);
 				}
 			}

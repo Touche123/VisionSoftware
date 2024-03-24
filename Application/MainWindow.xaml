@@ -111,18 +111,26 @@
                         </ListBox.ItemsPanel>
                         <ListBox.ItemTemplate>
                             <DataTemplate>
-                                <Image Source="{Binding}" Margin="5" Width="200" Height="150" Stretch="Uniform">
-                                    <Image.Style>
-                                        <Style TargetType="Image">
-                                            <Setter Property="Cursor" Value="Hand"/>
-                                            <Style.Triggers>
-                                                <Trigger Property="IsMouseOver" Value="True">
-                                                    <Setter Property="Opacity" Value="0.8"/>
-                                                </Trigger>
-                                            </Style.Triggers>
-                                        </Style>
-                                    </Image.Style>
-                                </Image>
+                                <Grid>
+                                    <Grid.RowDefinitions>
+                                        <RowDefinition Height="Auto"></RowDefinition>
+                                        <RowDefinition Height="Auto"></RowDefinition>
+                                    </Grid.RowDefinitions>
+                                    <Label Grid.Row="0" Foreground="Black" Content="{Binding ImagePath}"></Label>
+                                    <Image Grid.Row="1" Source="{Binding Image}" Margin="5" Width="200" Height="150" Stretch="Uniform">
+                                        <Image.Style>
+                                            <Style TargetType="Image">
+                                                <Setter Property="Cursor" Value="Hand"/>
+                                                <Style.Triggers>
+                                                    <Trigger Property="IsMouseOver" Value="True">
+                                                        <Setter Property="Opacity" Value="0.8"/>
+                                                    </Trigger>
+                                                </Style.Triggers>
+                                            </Style>
+                                        </Image.Style>
+                                    </Image>
+                                </Grid>
+                                
                             </DataTemplate>
                         </ListBox.ItemTemplate>
                     </ListBox>
