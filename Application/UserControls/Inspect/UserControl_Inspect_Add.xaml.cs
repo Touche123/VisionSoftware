@@ -21,15 +21,15 @@ namespace MainApp.UserControls
     /// </summary>
     public partial class UserControl_Inspect_Add : UserControl
     {
-		public InspectModel InspectModel
-		{
+		//public InspectModel InspectModel
+		//{
 			
-			get { return DependencyProperties.InspectModelProperty(this); }
-			set { SetValue(InspectModelProperty, value); }
-		}
+		//	get { return DependencyProperties.InspectModelProperty(this); }
+		//	set { SetValue(InspectModelProperty, value); }
+		//}
 
-		public static readonly DependencyProperty InspectModelProperty =
-		DependencyProperty.Register("InspectModel", typeof(InspectModel), typeof(UserControl_Inspect));
+		//public static readonly DependencyProperty InspectModelProperty =
+		//DependencyProperty.Register("InspectModel", typeof(InspectModel), typeof(UserControl_Inspect));
 
 		private Mat _destination;
 		private InspectModel _inspectModel;
@@ -37,14 +37,15 @@ namespace MainApp.UserControls
 		public UserControl_Inspect_Add(UserControl_Inspect userControlInspect, Mat destination, InspectModel inspectModel)
         {
             InitializeComponent();
+			DataContext = new InspectViewModel();
 			_destination = destination;
-			InspectModel = inspectModel;
+			_inspectModel = inspectModel;
 			_userControlInspect = userControlInspect;
 		}
 
 		private void Button_Click_AddPattern(object sender, RoutedEventArgs e)
 		{
-			InspectModel.Tools.Add(new PatternTool());
+            _inspectModel.Tools.Add(new PatternTool());
 			_userControlInspect.ContentControl.Content = new UserControl_Inspect_Hierarchy(_userControlInspect, _inspectModel);
 			_userControlInspect.ContentControl.Content = new UserControl_Inspect_Add_Pattern(_userControlInspect, _destination, _inspectModel);
 		}

@@ -22,9 +22,11 @@ using System.ComponentModel;
 using System.Collections.ObjectModel;
 using static Tensorflow.GraphTransferInfo.Types;
 using OpenCvSharp.XFeatures2D;
+using System.Drawing.Text;
 
 namespace MainApp
 {
+
 	public class Thumbnail : BindableBase
 	{
 		private string _imagePath;
@@ -56,7 +58,7 @@ namespace MainApp
 		}
 	}
 
-    public class MainWindowViewModel : BindableBase, INotifyPropertyChanged
+    public class MainWindowViewModel: BindableBase, INotifyPropertyChanged
     {
         [DllImport("kernel32.dll", SetLastError = true)]
         [return: MarshalAs(UnmanagedType.Bool)]
@@ -64,7 +66,33 @@ namespace MainApp
 
 		public event PropertyChangedEventHandler? PropertyChanged;
 		private ObservableCollection<Thumbnail> _thumbnails;
-		public ObservableCollection<Thumbnail> Thumbnails
+
+		private readonly InspectService _inspectService;
+        public MainWindowViewModel(InspectService service)
+        {
+
+			_inspectService = service;
+
+            Ncc = new NCC();
+            _inspectModel = new InspectModel();
+            //LoadCommand = new DelegateCommand<string>(Ncc.LoadExecute);
+            LoadCommand = new DelegateCommand<string>(LoadExecute);
+            TrainCommand = new DelegateCommand(Ncc.TrainTemplate);
+            //SearchCommand = new DelegateCommand(Ncc.MatchSearch);
+            SearchCommand = new DelegateCommand(SurfTest);
+            Thumbnails = new ObservableCollection<Thumbnail>();
+            SelectedImages = new ObservableCollection<object>();
+            MenuSelectCommand = new DelegateCommand<string>(MenuSelectCommandExecute);
+            LoadImagesFromDirectory("C:\\Dev\\c#\\VisionSoftware\\Application\\bin\\Debug\\net6.0-windows\\assets\\images");
+            AllocConsole();
+
+            //Test test = new Test();
+
+            //DNNWindowViewModel dNNWindowViewModel = new DNNWindowViewModel();
+            //dNNWindowViewModel.Run();
+        }
+
+        public ObservableCollection<Thumbnail> Thumbnails
 		{
 			get { return _thumbnails; }
 			set
@@ -88,7 +116,7 @@ namespace MainApp
 		}
 
         public NCC Ncc { get; set; }
-		private Mat destination;
+		
 		private double canvasWidth;
 		private double canvasHeight;
 		private double zoomViewboxWidth;
@@ -110,20 +138,20 @@ namespace MainApp
 		/// <summary>
 		/// Image to be processed
 		/// </summary>
-		public Mat Destination
-		{
-			get { return destination; }
-			set
-			{
-				destination = value;
-				CanvasWidth = destination.Width;
-				CanvasHeight = destination.Height;
-				ZoomViewboxWidth = destination.Width;
-				ZoomViewboxHeight = destination.Height;
+		//public Mat Destination
+		//{
+		//	get { return destination; }
+		//	set
+		//	{
+		//		destination = value;
+		//		CanvasWidth = destination.Width;
+		//		CanvasHeight = destination.Height;
+		//		ZoomViewboxWidth = destination.Width;
+		//		ZoomViewboxHeight = destination.Height;
 
-				OnPropertyChanged(nameof(Destination));
-			}
-		}
+		//		OnPropertyChanged(nameof(Destination));
+		//	}
+		//}
 
 		public void MenuSelectCommandExecute(string context)
 		{
@@ -133,7 +161,7 @@ namespace MainApp
 					ToolContent = new UserControl_Image();
 					break;
 				case "inspect":
-					ToolContent = new UserControl_Inspect(Destination, _inspectModel);
+					ToolContent = new UserControl_Inspect(_inspectService.Destination, _inspectModel);
 					break;
 
 				default:
@@ -203,28 +231,6 @@ namespace MainApp
 			}
 		}
 
-		public MainWindowViewModel()
-        {
-			
-            Ncc = new NCC();
-			_inspectModel = new InspectModel();
-			//LoadCommand = new DelegateCommand<string>(Ncc.LoadExecute);
-			LoadCommand = new DelegateCommand<string>(LoadExecute);
-			TrainCommand = new DelegateCommand(Ncc.TrainTemplate);
-            //SearchCommand = new DelegateCommand(Ncc.MatchSearch);
-			SearchCommand = new DelegateCommand(SurfTest);
-			Thumbnails = new ObservableCollection<Thumbnail>();
-			SelectedImages = new ObservableCollection<object>();
-			MenuSelectCommand = new DelegateCommand<string>(MenuSelectCommandExecute);
-			LoadImagesFromDirectory("C:\\dev\\c#\\Vision Software\\Application\\bin\\Debug\\net6.0-windows\\assets\\images\\Cognex Block Images");
-			AllocConsole();
-
-            //Test test = new Test();
-
-            //DNNWindowViewModel dNNWindowViewModel = new DNNWindowViewModel();
-            //dNNWindowViewModel.Run();
-        }
-
         void SurfTest()
         {
 			// Convert the template image to grayscale if it's not already
@@ -239,7 +245,7 @@ namespace MainApp
 			Mat descriptorsTemplate = new Mat(), descriptorsDestination = new Mat();
 
 			surf.DetectAndCompute(Template, null, out keypointsTemplate, descriptorsTemplate);
-			surf.DetectAndCompute(Destination, null, out keypointsDestination, descriptorsDestination);
+			surf.DetectAndCompute(_inspectService.Destination, null, out keypointsDestination, descriptorsDestination);
 
 			// Match descriptors using FLANN matcher
 			var matcher = new FlannBasedMatcher();
@@ -266,7 +272,7 @@ namespace MainApp
 
 			foreach (var keypoint in keypointsDestination)
 			{
-				Cv2.CornerSubPix(Destination, new[] { keypoint.Pt }, subpixelSize, new Size(-1, -1), criteria);
+				Cv2.CornerSubPix(_inspectService.Destination, new[] { keypoint.Pt }, subpixelSize, new Size(-1, -1), criteria);
 			}
 
 			// Estimate affine transformation using RANSAC
@@ -276,11 +282,11 @@ namespace MainApp
 
 			// Apply the affine transformation to the template image
 			Mat transformedTemplate = new Mat();
-			Cv2.WarpAffine(Template, transformedTemplate, affineTransform, Destination.Size());
+			Cv2.WarpAffine(Template, transformedTemplate, affineTransform, _inspectService.Destination.Size());
 
 			// Draw correspondences on the images
 			var matchesImage = new Mat();
-			Cv2.DrawMatches(Template, keypointsTemplate, Destination, keypointsDestination, goodMatches, matchesImage);
+			Cv2.DrawMatches(Template, keypointsTemplate, _inspectService.Destination, keypointsDestination, goodMatches, matchesImage);
 
 
 			// Display the result
@@ -319,8 +325,8 @@ namespace MainApp
 					}
 					else
 					{
-						Destination?.Dispose();
-						Destination = Cv2.ImRead(file, ImreadModes.Grayscale);
+						_inspectService.Destination?.Dispose();
+						_inspectService.Destination = Cv2.ImRead(file, ImreadModes.Grayscale);
 						//Destination = new Mat(file);
 					}
 				}

@@ -13,5 +13,17 @@ namespace MainApp
     /// </summary>
     public partial class App : Application
     {
+        protected override void OnStartup(StartupEventArgs e)
+        {
+            base.OnStartup(e);
+            //ConfigureContainer();
+            RunApplication();
+        }
+
+        private void RunApplication()
+        {
+            var mainWindow = new MainWindow();
+            mainWindow.Show();
+        }
     }
 }

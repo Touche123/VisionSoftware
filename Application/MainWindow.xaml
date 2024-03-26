@@ -11,9 +11,9 @@
     <Window.Resources>
         <local:BitmapSourceConvert x:Key="BitmapSourceConvert"/>
     </Window.Resources>
-    <Window.DataContext>
+    <!--<Window.DataContext>
         <local:MainWindowViewModel/>
-    </Window.DataContext>
+    </Window.DataContext>-->
 
     <Grid>
         <Grid.ColumnDefinitions>
@@ -96,7 +96,7 @@
                     <Viewbox Grid.Row="0" Width="{Binding ZoomViewboxWidth}" Height="{Binding ZoomViewboxHeight}" MouseWheel="ZoomViewbox_OnMouseWheel">
                         <Canvas Width="{Binding CanvasWidth}" Height="{Binding CanvasHeight}">
                             <Canvas.Background>
-                                <ImageBrush Stretch="UniformToFill" ImageSource="{Binding Destination, Converter={StaticResource BitmapSourceConvert}}" />
+                            <ImageBrush Stretch="UniformToFill" ImageSource="{Binding _inspectService.Destination, Converter={StaticResource BitmapSourceConvert}}" />
                             </Canvas.Background>
                         </Canvas>
                     </Viewbox>

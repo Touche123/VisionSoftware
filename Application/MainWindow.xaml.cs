@@ -15,14 +15,23 @@ using System.Windows.Shapes;
 
 namespace MainApp
 {
+    public interface IService
+    {
+
+    }
+
     /// <summary>
     /// Interaction logic for MainWindow.xaml
     /// </summary>
     public partial class MainWindow : Window
     {
+        public readonly InspectService _inspectService;
+
         public MainWindow()
         {
             InitializeComponent();
+			_inspectService = new InspectService();
+			DataContext = new MainWindowViewModel(_inspectService);
         }
 
 		public void ListBox_SelectionChanged(object sender, SelectionChangedEventArgs e)
