@@ -34,13 +34,6 @@ namespace MainApp
 				_inspectContent = value;
 			}
 		}
-
-        public InspectModel InspectModel
-        {
-            get { return (InspectModel)GetValue(InspectModelProperty); }
-			set { SetValue(InspectModelProperty, value); }
-		}
-
 		public ContentControl ContentControl
 		{
 			get { return (ContentControl)GetValue(ContentControlProperty); }
@@ -52,17 +45,18 @@ namespace MainApp
 		public static readonly DependencyProperty ContentControlProperty =
 		DependencyProperty.Register("ContentControl", typeof(ContentControl), typeof(UserControl_Inspect));
 
-		public UserControl_Inspect(Mat destination, InspectModel inspectModel)
+		private readonly IService _inspectService;
+		public UserControl_Inspect(Mat destination)
         {
             InitializeComponent();
+			_inspectService = ServiceLocator.ResolveSingleton<InspectService>();
 			_destination = destination;
-			InspectModel = inspectModel;
-			ContentControl = new UserControl_Inspect_Hierarchy(this, InspectModel);
+			ContentControl = new UserControl_Inspect_Hierarchy(this);
 		}
 
 		private void Button_Click(object sender, RoutedEventArgs e)
 		{
-			ContentControl = new UserControl_Inspect_Add(this, _destination, InspectModel);
+			ContentControl = new UserControl_Inspect_Add(this, _destination);
             //InspectModel.Tools.Add(new PatternTool());
 		}
 

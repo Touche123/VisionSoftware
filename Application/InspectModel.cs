@@ -52,6 +52,7 @@ namespace MainApp
 		public void AddTool()
         {
             Tools.Add(new PatternTool());
+			OnPropertyChanged(nameof(Tools));
         }
 
 		protected virtual void OnPropertyChanged(string propertyName)

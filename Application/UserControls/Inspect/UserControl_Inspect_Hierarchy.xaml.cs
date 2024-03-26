@@ -2,6 +2,8 @@
 using Prism.Commands;
 using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
+using System.ComponentModel;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -22,21 +24,27 @@ namespace MainApp
     /// </summary>
     public partial class UserControl_Inspect_Hierarchy : UserControl
     {
-        private InspectModel _inspectModel;
 		private UserControl_Inspect _userControlInspect;
 		public ICommand EditCommand { get; private set; }
+		public readonly InspectService _inspectService;
 
-		public UserControl_Inspect_Hierarchy(UserControl_Inspect userControlInspect, InspectModel inspectModel)
+		private void InspectService_PropertyChanged(object sender, PropertyChangedEventArgs e)
+		{
+			
+		}
+		public UserControl_Inspect_Hierarchy(UserControl_Inspect userControlInspect)
         {
             InitializeComponent();
-			_inspectModel = inspectModel;
+			_inspectService = ServiceLocator.ResolveSingleton<InspectService>();
 			_userControlInspect = userControlInspect;
 			EditCommand = new DelegateCommand(EditCommandExecute);
+
+			_inspectService.PropertyChanged += InspectService_PropertyChanged;
 		}
 
 		public void EditCommandExecute()
 		{
-			_inspectModel.Tools.RemoveAt(0);
+			_inspectService.InspectModel.Tools.RemoveAt(0);
 			var bla = 2;
 			return;
 		}
@@ -60,12 +68,12 @@ namespace MainApp
 
 				if (tool != null)
 				{
-					_inspectModel.SelectedTool = tool;
+					_inspectService.InspectModel.SelectedTool = tool;
 				}
 
 			}
 
-			_userControlInspect.ContentControl.Content = new UserControl_Inspect_Edit(_userControlInspect, _inspectModel);
+			_userControlInspect.ContentControl.Content = new UserControl_Inspect_Edit(_userControlInspect);
 		}
 
 		private void Button_Click_Delete(object sender, RoutedEventArgs e)
@@ -82,7 +90,7 @@ namespace MainApp
 
 				if (tool != null)
 				{
-					_inspectModel.Tools.Remove(tool);
+					_inspectService.InspectModel.Tools.Remove(tool);
 				}
 				
 			}

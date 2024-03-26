@@ -20,7 +20,6 @@ namespace MainApp.UserControls
     /// </summary>
     public partial class UserControl_Inspect_Edit : UserControl
     {
-		private InspectModel _inspectModel;
 		private ITool _selecetedTool;
 		private UserControl_Inspect _userControlInspect;
 		public ITool SelectedTool
@@ -38,24 +37,26 @@ namespace MainApp.UserControls
 		public static readonly DependencyProperty SelectedToolNameProperty =
 		DependencyProperty.Register("SelectedToolName", typeof(string), typeof(UserControl_Inspect_Edit));
 
-		public UserControl_Inspect_Edit(UserControl_Inspect userControlInspect, InspectModel inspectModel)
+		private readonly InspectService _inspectService;
+
+		public UserControl_Inspect_Edit(UserControl_Inspect userControlInspect)
         {
             InitializeComponent();
-			_inspectModel = inspectModel;
+			_inspectService = ServiceLocator.ResolveSingleton<InspectService>();
 			_userControlInspect = userControlInspect;
-			SelectedTool = _inspectModel.SelectedTool;
+			SelectedTool = _inspectService.InspectModel.SelectedTool;
             SelectedToolName = SelectedTool.Name;
         }
 
 		private void Button_Click(object sender, RoutedEventArgs e)
 		{
-			_userControlInspect.ContentControl.Content = new UserControl_Inspect_Hierarchy(_userControlInspect, _inspectModel);
+			_userControlInspect.ContentControl.Content = new UserControl_Inspect_Hierarchy(_userControlInspect);
 		}
 
 		private void Button_Click_Delete(object sender, RoutedEventArgs e)
 		{
-			_inspectModel.Tools.Remove(SelectedTool);
-			_userControlInspect.ContentControl.Content = new UserControl_Inspect_Hierarchy(_userControlInspect, _inspectModel);
+			_inspectService.InspectModel.Tools.Remove(SelectedTool);
+			_userControlInspect.ContentControl.Content = new UserControl_Inspect_Hierarchy(_userControlInspect);
 		}
 	}
 }

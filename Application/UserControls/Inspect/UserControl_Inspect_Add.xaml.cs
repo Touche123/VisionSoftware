@@ -32,22 +32,23 @@ namespace MainApp.UserControls
 		//DependencyProperty.Register("InspectModel", typeof(InspectModel), typeof(UserControl_Inspect));
 
 		private Mat _destination;
-		private InspectModel _inspectModel;
 		private UserControl_Inspect _userControlInspect;
-		public UserControl_Inspect_Add(UserControl_Inspect userControlInspect, Mat destination, InspectModel inspectModel)
+		private readonly InspectService _inspectService;
+		public UserControl_Inspect_Add(UserControl_Inspect userControlInspect, Mat destination)
         {
             InitializeComponent();
 			DataContext = new InspectViewModel();
+			_inspectService = ServiceLocator.ResolveSingleton<InspectService>();
 			_destination = destination;
-			_inspectModel = inspectModel;
 			_userControlInspect = userControlInspect;
 		}
 
 		private void Button_Click_AddPattern(object sender, RoutedEventArgs e)
 		{
-            _inspectModel.Tools.Add(new PatternTool());
-			_userControlInspect.ContentControl.Content = new UserControl_Inspect_Hierarchy(_userControlInspect, _inspectModel);
-			_userControlInspect.ContentControl.Content = new UserControl_Inspect_Add_Pattern(_userControlInspect, _destination, _inspectModel);
+			_inspectService.InspectModel.AddTool();
+			//_inspectService.InspectModel.Tools.Add(new PatternTool());
+			_userControlInspect.ContentControl.Content = new UserControl_Inspect_Hierarchy(_userControlInspect);
+			_userControlInspect.ContentControl.Content = new UserControl_Inspect_Add_Pattern(_userControlInspect, _destination);
 		}
 	}
 }

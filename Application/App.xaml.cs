@@ -17,7 +17,8 @@ namespace MainApp
         {
             base.OnStartup(e);
             //ConfigureContainer();
-            RunApplication();
+            ServiceLocator.RegisterSingleton<InspectService>(() => new InspectService());
+            //RunApplication();
         }
 
         private void RunApplication()

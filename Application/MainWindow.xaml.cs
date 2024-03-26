@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -25,15 +26,10 @@ namespace MainApp
     /// </summary>
     public partial class MainWindow : Window
     {
-        public readonly InspectService _inspectService;
-
         public MainWindow()
         {
             InitializeComponent();
-			_inspectService = new InspectService();
-			DataContext = new MainWindowViewModel(_inspectService);
         }
-
 		public void ListBox_SelectionChanged(object sender, SelectionChangedEventArgs e)
 		{
 			if (sender is ListBox listBox && listBox.DataContext is MainWindowViewModel viewModel)

@@ -7,7 +7,7 @@
              mc:Ignorable="d" 
              d:DesignHeight="450" d:DesignWidth="800">
     <Grid>
-        <ListView x:Name="test" Grid.Row="1" ItemsSource="{Binding InspectModel.Tools}" SelectedItem="{Binding InspectModel.SelectedTool}">
+        <ListView x:Name="test" Grid.Row="1" ItemsSource="{Binding _inspectService.InspectModel.Tools}" SelectedItem="{Binding _inspectService.InspectModel.SelectedTool}">
             <ListView.ItemTemplate>
                 <DataTemplate>
                     <Grid>

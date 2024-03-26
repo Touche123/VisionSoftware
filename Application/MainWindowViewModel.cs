@@ -66,15 +66,36 @@ namespace MainApp
 
 		public event PropertyChangedEventHandler? PropertyChanged;
 		private ObservableCollection<Thumbnail> _thumbnails;
+		private Mat _destination;
+
+		/// <summary>
+		/// Image to be processed
+		/// </summary>
+		public Mat Destination
+		{
+			get { return _destination; }
+			set
+			{
+				_destination = value;
+
+				OnPropertyChanged(nameof(Destination));
+			}
+		}
 
 		private readonly InspectService _inspectService;
-        public MainWindowViewModel(InspectService service)
+
+		private void InspectService_PropertyChanged(object sender, PropertyChangedEventArgs e)
+		{
+			OnPropertyChanged(e.PropertyName);
+		}
+
+        public MainWindowViewModel()
         {
 
-			_inspectService = service;
+			_inspectService = ServiceLocator.ResolveSingleton<InspectService>();
+			_inspectService.PropertyChanged += InspectService_PropertyChanged;
 
-            Ncc = new NCC();
-            _inspectModel = new InspectModel();
+			Ncc = new NCC();
             //LoadCommand = new DelegateCommand<string>(Ncc.LoadExecute);
             LoadCommand = new DelegateCommand<string>(LoadExecute);
             TrainCommand = new DelegateCommand(Ncc.TrainTemplate);
@@ -83,14 +104,16 @@ namespace MainApp
             Thumbnails = new ObservableCollection<Thumbnail>();
             SelectedImages = new ObservableCollection<object>();
             MenuSelectCommand = new DelegateCommand<string>(MenuSelectCommandExecute);
-            LoadImagesFromDirectory("C:\\Dev\\c#\\VisionSoftware\\Application\\bin\\Debug\\net6.0-windows\\assets\\images");
+            LoadImagesFromDirectory("C:\\dev\\c#\\Vision Software\\Application\\bin\\Debug\\net6.0-windows\\assets\\images\\Cognex Block Images");
             AllocConsole();
+			ZoomViewboxWidth = 100;
+			ZoomViewboxHeight = 100;
 
-            //Test test = new Test();
+			//Test test = new Test();
 
-            //DNNWindowViewModel dNNWindowViewModel = new DNNWindowViewModel();
-            //dNNWindowViewModel.Run();
-        }
+			//DNNWindowViewModel dNNWindowViewModel = new DNNWindowViewModel();
+			//dNNWindowViewModel.Run();
+		}
 
         public ObservableCollection<Thumbnail> Thumbnails
 		{
@@ -117,12 +140,9 @@ namespace MainApp
 
         public NCC Ncc { get; set; }
 		
-		private double canvasWidth;
-		private double canvasHeight;
 		private double zoomViewboxWidth;
 		private double zoomViewboxHeight;
 		UserControl _toolContent;
-		InspectModel _inspectModel;
 
 		public UserControl ToolContent
 		{
@@ -161,33 +181,13 @@ namespace MainApp
 					ToolContent = new UserControl_Image();
 					break;
 				case "inspect":
-					ToolContent = new UserControl_Inspect(_inspectService.Destination, _inspectModel);
+					ToolContent = new UserControl_Inspect(Destination);
 					break;
 
 				default:
 					break;
 			}
 		}
-		public double CanvasWidth
-		{
-			get { return canvasWidth; }
-			set
-			{
-				canvasWidth = value;
-				OnPropertyChanged(nameof(CanvasWidth));
-			}
-		}
-
-		public double CanvasHeight
-		{
-			get { return canvasHeight; }
-			set
-			{
-				canvasHeight = value;
-				OnPropertyChanged(nameof(CanvasHeight));
-			}
-		}
-
 		public double ZoomViewboxWidth
 		{
 			get { return zoomViewboxWidth; }
@@ -245,7 +245,7 @@ namespace MainApp
 			Mat descriptorsTemplate = new Mat(), descriptorsDestination = new Mat();
 
 			surf.DetectAndCompute(Template, null, out keypointsTemplate, descriptorsTemplate);
-			surf.DetectAndCompute(_inspectService.Destination, null, out keypointsDestination, descriptorsDestination);
+			surf.DetectAndCompute(Destination, null, out keypointsDestination, descriptorsDestination);
 
 			// Match descriptors using FLANN matcher
 			var matcher = new FlannBasedMatcher();
@@ -272,7 +272,7 @@ namespace MainApp
 
 			foreach (var keypoint in keypointsDestination)
 			{
-				Cv2.CornerSubPix(_inspectService.Destination, new[] { keypoint.Pt }, subpixelSize, new Size(-1, -1), criteria);
+				Cv2.CornerSubPix(Destination, new[] { keypoint.Pt }, subpixelSize, new Size(-1, -1), criteria);
 			}
 
 			// Estimate affine transformation using RANSAC
@@ -282,11 +282,11 @@ namespace MainApp
 
 			// Apply the affine transformation to the template image
 			Mat transformedTemplate = new Mat();
-			Cv2.WarpAffine(Template, transformedTemplate, affineTransform, _inspectService.Destination.Size());
+			Cv2.WarpAffine(Template, transformedTemplate, affineTransform, Destination.Size());
 
 			// Draw correspondences on the images
 			var matchesImage = new Mat();
-			Cv2.DrawMatches(Template, keypointsTemplate, _inspectService.Destination, keypointsDestination, goodMatches, matchesImage);
+			Cv2.DrawMatches(Template, keypointsTemplate, Destination, keypointsDestination, goodMatches, matchesImage);
 
 
 			// Display the result
@@ -325,9 +325,9 @@ namespace MainApp
 					}
 					else
 					{
-						_inspectService.Destination?.Dispose();
-						_inspectService.Destination = Cv2.ImRead(file, ImreadModes.Grayscale);
-						//Destination = new Mat(file);
+						Destination?.Dispose();
+						Destination = Cv2.ImRead(file, ImreadModes.Grayscale);
+						Destination = new Mat(file);
 					}
 				}
 			}

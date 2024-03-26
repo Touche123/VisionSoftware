@@ -11,23 +11,22 @@ namespace MainApp
 {
     public class InspectService : IService, INotifyPropertyChanged
     {
-        
-        private Mat _destination = new Mat();
+        private InspectModel _inspectModel = new InspectModel();
 
-        /// <summary>
-		/// Image to be processed
-		/// </summary>
-		public Mat Destination
+		public InspectModel InspectModel { get => _inspectModel; set => _inspectModel = value; }
+
+		public event PropertyChangedEventHandler? PropertyChanged;
+
+		private void InspectModel_PropertyChanged(object sender, PropertyChangedEventArgs e)
+		{
+			OnPropertyChanged(e.PropertyName);
+		}
+
+		public InspectService()
         {
-            get { return _destination; }
-            set
-            {
-                _destination = value;
-                OnPropertyChanged(nameof(Destination));
-            }
-        }
+			_inspectModel.PropertyChanged += InspectModel_PropertyChanged;
+		}
 
-        public event PropertyChangedEventHandler? PropertyChanged;
 
         protected virtual void OnPropertyChanged(string propertyName)
         {
