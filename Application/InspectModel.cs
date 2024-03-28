@@ -29,7 +29,11 @@ namespace MainApp
 		public ITool SelectedTool
 		{
 			get { return _selectedTool; }
-			set { _selectedTool = value; }
+			set 
+			{ 
+				_selectedTool = value;
+				OnPropertyChanged(nameof(SelectedTool));
+			}
 		}
 
 		public event PropertyChangedEventHandler? PropertyChanged;
@@ -53,7 +57,7 @@ namespace MainApp
         {
             Tools.Add(new PatternTool());
 			OnPropertyChanged(nameof(Tools));
-        }
+		}
 
 		protected virtual void OnPropertyChanged(string propertyName)
 		{

@@ -23,16 +23,15 @@ using System.Collections.ObjectModel;
 using static Tensorflow.GraphTransferInfo.Types;
 using OpenCvSharp.XFeatures2D;
 using System.Drawing.Text;
+using MainApp.ViewModel;
 
 namespace MainApp
 {
 
-	public class Thumbnail : BindableBase
+	public class Thumbnail : ViewModelBase
 	{
 		private string _imagePath;
 		private BitmapImage _image;
-
-		public event PropertyChangedEventHandler? PropertyChanged;
 
 		public string ImagePath
 		{
@@ -52,19 +51,14 @@ namespace MainApp
 				OnPropertyChanged(nameof(Image));
 			}
 		}
-		protected virtual void OnPropertyChanged(string propertyName)
-		{
-			PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
-		}
 	}
 
-    public class MainWindowViewModel: BindableBase, INotifyPropertyChanged
+    public class MainWindowViewModel : ViewModelBase
     {
         [DllImport("kernel32.dll", SetLastError = true)]
         [return: MarshalAs(UnmanagedType.Bool)]
         static extern bool AllocConsole();
 
-		public event PropertyChangedEventHandler? PropertyChanged;
 		private ObservableCollection<Thumbnail> _thumbnails;
 		private Mat _destination;
 
@@ -363,11 +357,6 @@ namespace MainApp
 			bitmapImage.StreamSource = new MemoryStream(ms.ToArray());
 			bitmapImage.EndInit();
 			return bitmapImage;
-		}
-
-		protected virtual void OnPropertyChanged(string propertyName)
-		{
-			PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
 		}
 
 		public ICommand LoadCommand { get; private set; }

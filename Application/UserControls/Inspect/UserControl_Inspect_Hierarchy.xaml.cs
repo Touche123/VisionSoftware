@@ -1,4 +1,5 @@
 ﻿using MainApp.UserControls;
+using MainApp.ViewModel;
 using Prism.Commands;
 using System;
 using System.Collections.Generic;
@@ -16,6 +17,7 @@ using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
 using System.Windows.Shapes;
+using Tensorflow.Contexts;
 
 namespace MainApp
 {

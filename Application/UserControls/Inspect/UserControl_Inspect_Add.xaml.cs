@@ -48,7 +48,7 @@ namespace MainApp.UserControls
 			_inspectService.InspectModel.AddTool();
 			//_inspectService.InspectModel.Tools.Add(new PatternTool());
 			_userControlInspect.ContentControl.Content = new UserControl_Inspect_Hierarchy(_userControlInspect);
-			_userControlInspect.ContentControl.Content = new UserControl_Inspect_Add_Pattern(_userControlInspect, _destination);
+			//_userControlInspect.ContentControl.Content = new UserControl_Inspect_Add_Pattern(_userControlInspect, _destination);
 		}
 	}
 }
