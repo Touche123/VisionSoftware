@@ -29,17 +29,18 @@ namespace MainApp.UserControls
 
 		public static readonly DependencyProperty AddPatternProperty =
 		DependencyProperty.Register("Destination", typeof(Mat), typeof(UserControl_Inspect_Add_Pattern));
-		private readonly IService _inspectService;
+		private readonly InspectService _inspectService;
 		public UserControl_Inspect_Add_Pattern(UserControl_Inspect userControlInspect, Mat destination)
         {
             InitializeComponent();
 			_inspectService = ServiceLocator.ResolveSingleton<InspectService>();
 			Destination = destination;
 
-            OpenCvSharp.Rect rect = new OpenCvSharp.Rect(new OpenCvSharp.Point(0, 0), new OpenCvSharp.Size(100, 100));
-            Mat tmp = Destination;
-            Cv2.Rectangle(tmp, rect, new Scalar(255, 255, 255));
-            Destination = tmp;
+            
+            //OpenCvSharp.Rect rect = new OpenCvSharp.Rect(new OpenCvSharp.Point(0, 0), new OpenCvSharp.Size(100, 100));
+            //Mat tmp = Destination;
+            //Cv2.Rectangle(tmp, rect, new Scalar(255, 255, 255));
+            //Destination = tmp;
         }
     }
 }

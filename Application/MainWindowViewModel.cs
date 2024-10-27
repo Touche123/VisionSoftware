@@ -71,29 +71,14 @@ namespace MainApp
         static extern bool AllocConsole();
 
 		private ObservableCollection<Thumbnail> _thumbnails;
-		private Mat _destination;
-
-		/// <summary>
-		/// Image to be processed
-		/// </summary>
-		public Mat Destination
-		{
-			get { return _destination; }
-			set
-			{
-				_destination = value;
-
-				OnPropertyChanged(nameof(Destination));
-			}
-		}
 
 		public ObservableCollection<ITool> Tools
 		{
-			get { return _inspectService.InspectModel.Tools; }
-			set { _inspectService.InspectModel.Tools = value; }
+			get { return InspectService.InspectModel.Tools; }
+			set { InspectService.InspectModel.Tools = value; }
 		}
 
-		private InspectService _inspectService;
+		public InspectService InspectService { get; }
 
 		private void InspectService_PropertyChanged(object sender, PropertyChangedEventArgs e)
 		{
@@ -102,9 +87,9 @@ namespace MainApp
 
         public MainWindowViewModel()
         {
-			
-			_inspectService = ServiceLocator.ResolveSingleton<InspectService>();
-			_inspectService.PropertyChanged += InspectService_PropertyChanged;
+
+            InspectService = ServiceLocator.ResolveSingleton<InspectService>();
+            InspectService.PropertyChanged += InspectService_PropertyChanged;
 
 			Ncc = new NCC();
             //LoadCommand = new DelegateCommand<string>(Ncc.LoadExecute);
@@ -192,7 +177,7 @@ namespace MainApp
 					ToolContent = new UserControl_Image();
 					break;
 				case "inspect":
-					ToolContent = new UserControl_Inspect(this, Destination);
+					ToolContent = new UserControl_Inspect(this, InspectService.Destination);
 					break;
 
 				default:
@@ -256,7 +241,7 @@ namespace MainApp
 			Mat descriptorsTemplate = new Mat(), descriptorsDestination = new Mat();
 
 			surf.DetectAndCompute(Template, null, out keypointsTemplate, descriptorsTemplate);
-			surf.DetectAndCompute(Destination, null, out keypointsDestination, descriptorsDestination);
+			surf.DetectAndCompute(InspectService.Destination, null, out keypointsDestination, descriptorsDestination);
 
 			// Match descriptors using FLANN matcher
 			var matcher = new FlannBasedMatcher();
@@ -283,7 +268,7 @@ namespace MainApp
 
 			foreach (var keypoint in keypointsDestination)
 			{
-				Cv2.CornerSubPix(Destination, new[] { keypoint.Pt }, subpixelSize, new Size(-1, -1), criteria);
+				Cv2.CornerSubPix(InspectService.Destination, new[] { keypoint.Pt }, subpixelSize, new Size(-1, -1), criteria);
 			}
 
 			// Estimate affine transformation using RANSAC
@@ -293,11 +278,11 @@ namespace MainApp
 
 			// Apply the affine transformation to the template image
 			Mat transformedTemplate = new Mat();
-			Cv2.WarpAffine(Template, transformedTemplate, affineTransform, Destination.Size());
+			Cv2.WarpAffine(Template, transformedTemplate, affineTransform, InspectService.Destination.Size());
 
 			// Draw correspondences on the images
 			var matchesImage = new Mat();
-			Cv2.DrawMatches(Template, keypointsTemplate, Destination, keypointsDestination, goodMatches, matchesImage);
+			Cv2.DrawMatches(Template, keypointsTemplate, InspectService.Destination, keypointsDestination, goodMatches, matchesImage);
 
 
 			// Display the result
@@ -336,9 +321,9 @@ namespace MainApp
 					}
 					else
 					{
-						Destination?.Dispose();
-						Destination = Cv2.ImRead(file, ImreadModes.Grayscale);
-						Destination = new Mat(file);
+                        InspectService.Destination?.Dispose();
+						InspectService.Destination = Cv2.ImRead(file, ImreadModes.Grayscale);
+						InspectService.Destination = new Mat(file);
 					}
 				}
 			}

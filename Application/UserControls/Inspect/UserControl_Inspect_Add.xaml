@@ -10,7 +10,44 @@
         <StackPanel>
             <Expander Header="Locate">
                 <StackPanel>
-                    <Button Click="Button_Click_AddPattern">Find Pattern</Button>
+                    <Button x:Name="myButton" Click="Button_Click_AddPattern" Width="100" Height="100" BorderThickness="1" BorderBrush="White">
+                        <Button.Style>
+                            <Style TargetType="Button">
+                                <Setter Property="Padding" Value="5" />
+                                <Setter Property="Background" Value="#666666" />
+                                <Setter Property="BorderBrush" Value="White" />
+                                <Setter Property="BorderThickness" Value="2" />
+                                <Style.Triggers>
+                                    <Trigger Property="IsMouseOver" Value="True">
+                                        <Setter Property="Opacity" Value="0.8" />
+                                        <!-- Ensure no opacity change on hover -->
+                                    </Trigger>
+                                </Style.Triggers>
+                            </Style>
+                        </Button.Style>
+
+                        <!-- Button content with a Grid to layer the image and text -->
+                        <Grid>
+                            <StackPanel>
+                                <!-- Background image for the button -->
+                                <Image Source="pack://application:,,,/Resources/magnifier.png" Width="50" Height="50" Stretch="Fill" />
+
+                                <!-- Overlay content with hover effect -->
+                                <Grid Background="#66000000" Visibility="Collapsed">
+                                    <Grid.Style>
+                                        <Style TargetType="Grid">
+                                            <Style.Triggers>
+                                                <DataTrigger Binding="{Binding IsMouseOver, RelativeSource={RelativeSource AncestorType=Button}}" Value="True">
+                                                    <Setter Property="Visibility" Value="Visible" />
+                                                </DataTrigger>
+                                            </Style.Triggers>
+                                        </Style>
+                                    </Grid.Style>
+                                </Grid>
+                                <TextBlock Text="Find Pattern" HorizontalAlignment="Center" VerticalAlignment="Bottom" Foreground="White" />
+                            </StackPanel>
+                        </Grid>
+                    </Button>
                 </StackPanel>
             </Expander>
 

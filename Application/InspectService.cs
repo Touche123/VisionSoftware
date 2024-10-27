@@ -12,12 +12,23 @@ namespace MainApp
     public class InspectService : IService, INotifyPropertyChanged
     {
         private InspectModel _inspectModel = new InspectModel();
-
 		public InspectModel InspectModel { get => _inspectModel; set => _inspectModel = value; }
 
 		public event PropertyChangedEventHandler? PropertyChanged;
 
-		private void InspectModel_PropertyChanged(object sender, PropertyChangedEventArgs e)
+        private Mat _destination;
+        public Mat Destination
+        {
+            get { return _destination; }
+            set
+            {
+                _destination = value;
+
+                OnPropertyChanged(nameof(Destination));
+            }
+        }
+
+        private void InspectModel_PropertyChanged(object sender, PropertyChangedEventArgs e)
 		{
 			OnPropertyChanged(e.PropertyName);
 		}

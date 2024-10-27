@@ -40,12 +40,9 @@ namespace MainApp
 				foreach (var item in listBox.SelectedItems)
 				{
 					viewModel.SelectedImages.Add(item);
-					viewModel.Destination?.Dispose();
-					//viewModel.Destination = Cv2.ImRead(viewModel.SelectedImages[0].ToString(), ImreadModes.Grayscale);
+					viewModel.InspectService.Destination?.Dispose();
 					var thumbnail = (Thumbnail)viewModel.SelectedImages[0];
-					
-                    viewModel.Destination = new Mat(thumbnail.ImagePath);
-                    //viewModel.Ncc.Destination = viewModel.SelectedImages[0];
+                    viewModel.InspectService.Destination = new Mat(thumbnail.ImagePath);
                 }
 			}
         }

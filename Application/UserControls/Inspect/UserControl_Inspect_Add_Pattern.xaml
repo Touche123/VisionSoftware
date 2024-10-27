@@ -7,6 +7,43 @@
              mc:Ignorable="d" 
              d:DesignHeight="450" d:DesignWidth="800">
     <Grid>
-            
+        <StackPanel>
+            <TextBlock>Directions</TextBlock>
+            <Separator/>
+            <TextBlock>Position the model region over the feature you want to find.</TextBlock>
+            <TextBlock>Position the search region around the area to search.</TextBlock>
+            <TextBlock>Once you have configured the region press OK.</TextBlock>
+
+            <!-- Use a single Grid for all ComboBox pairs -->
+            <Grid>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto"/>
+                    <!-- For Input image -->
+                    <RowDefinition Height="Auto"/>
+                    <!-- For Model shape -->
+                    <RowDefinition Height="Auto"/>
+                    <!-- For Search shape -->
+                </Grid.RowDefinitions>
+
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="Auto"/>
+                    <!-- For the TextBlock -->
+                    <ColumnDefinition Width="*"/>
+                    <!-- For the ComboBox -->
+                </Grid.ColumnDefinitions>
+
+                <!-- Row for Input image -->
+                <TextBlock Grid.Row="0" Text="Input image" VerticalAlignment="Center"/>
+                <ComboBox Grid.Row="0" Grid.Column="1" Margin="5,0,0,0"/>
+
+                <!-- Row for Model shape -->
+                <TextBlock Grid.Row="1" Text="Model shape" VerticalAlignment="Center"/>
+                <ComboBox Grid.Row="1" Grid.Column="1" Margin="5,0,0,0"/>
+
+                <!-- Row for Search shape -->
+                <TextBlock Grid.Row="2" Text="Search shape" VerticalAlignment="Center"/>
+                <ComboBox Grid.Row="2" Grid.Column="1" Margin="5,0,0,0"/>
+            </Grid>
+        </StackPanel>
     </Grid>
 </UserControl>
