@@ -36,8 +36,8 @@ namespace MainApp.ViewModel
 		/// a public property with the specified name. This 
 		/// method does not exist in a Release build.
 		/// </summary>
-		[Conditional("DEBUG")]
-		[DebuggerStepThrough]
+		//[Conditional("DEBUG")]
+		//[DebuggerStepThrough]
 		public void VerifyPropertyName(string propertyName)
 		{
 			// Verify that the property name matches a real,  
@@ -49,8 +49,10 @@ namespace MainApp.ViewModel
 				if (this.ThrowOnInvalidPropertyName)
 					throw new Exception(msg);
 				else
-					Debug.Fail(msg);
-			}
+				{
+                    //Debug.Fail(msg);
+                }
+            }
 		}
 
 		/// <summary>

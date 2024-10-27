@@ -28,27 +28,28 @@ namespace MainApp
     {
 		private UserControl_Inspect _userControlInspect;
 		public ICommand EditCommand { get; private set; }
-		public readonly InspectService _inspectService;
+		public InspectService InspectService { get; }
+        public event PropertyChangedEventHandler? PropertyChanged;
 
-		private void InspectService_PropertyChanged(object sender, PropertyChangedEventArgs e)
+        private void InspectService_PropertyChanged(object sender, PropertyChangedEventArgs e)
 		{
 			
 		}
 		public UserControl_Inspect_Hierarchy(UserControl_Inspect userControlInspect)
         {
             InitializeComponent();
-			_inspectService = ServiceLocator.ResolveSingleton<InspectService>();
-			_userControlInspect = userControlInspect;
-			EditCommand = new DelegateCommand(EditCommandExecute);
+            DataContext = this;
 
-			_inspectService.PropertyChanged += InspectService_PropertyChanged;
+            InspectService = ServiceLocator.ResolveSingleton<InspectService>();
+            InspectService.PropertyChanged += InspectService_PropertyChanged;
+
+            _userControlInspect = userControlInspect;
+			EditCommand = new DelegateCommand(EditCommandExecute);
 		}
 
 		public void EditCommandExecute()
 		{
-			_inspectService.InspectModel.Tools.RemoveAt(0);
-			var bla = 2;
-			return;
+            InspectService.InspectModel.Tools.RemoveAt(0);
 		}
 
 		private void Button_Click(object sender, RoutedEventArgs e)
@@ -70,9 +71,8 @@ namespace MainApp
 
 				if (tool != null)
 				{
-					_inspectService.InspectModel.SelectedTool = tool;
+                    InspectService.InspectModel.SelectedTool = tool;
 				}
-
 			}
 
 			_userControlInspect.ContentControl.Content = new UserControl_Inspect_Edit(_userControlInspect);
@@ -92,11 +92,9 @@ namespace MainApp
 
 				if (tool != null)
 				{
-					_inspectService.InspectModel.Tools.Remove(tool);
+                    InspectService.InspectModel.Tools.Remove(tool);
 				}
-				
 			}
-			
 		}
 
 		// Helper method to find the parent ListViewItem
@@ -110,5 +108,10 @@ namespace MainApp
 			T parent = parentObject as T;
 			return parent ?? FindParent<T>(parentObject);
 		}
-	}
+
+        protected virtual void OnPropertyChanged(string propertyName)
+        {
+            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
+        }
+    }
 }

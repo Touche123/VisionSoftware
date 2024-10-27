@@ -46,6 +46,8 @@ namespace MainApp.UserControls
 			_userControlInspect = userControlInspect;
 			SelectedTool = _inspectService.InspectModel.SelectedTool;
             SelectedToolName = SelectedTool.Name;
+
+			DataContext = this;
         }
 
 		private void Button_Click(object sender, RoutedEventArgs e)

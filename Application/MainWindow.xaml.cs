@@ -1,4 +1,5 @@
-﻿using System;
+﻿using OpenCvSharp;
+using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
@@ -13,6 +14,7 @@ using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
 using System.Windows.Shapes;
+using static Tensorflow.GraphTransferInfo.Types;
 
 namespace MainApp
 {
@@ -24,7 +26,7 @@ namespace MainApp
     /// <summary>
     /// Interaction logic for MainWindow.xaml
     /// </summary>
-    public partial class MainWindow : Window
+    public partial class MainWindow : System.Windows.Window
     {
         public MainWindow()
         {
@@ -38,10 +40,15 @@ namespace MainApp
 				foreach (var item in listBox.SelectedItems)
 				{
 					viewModel.SelectedImages.Add(item);
-					//viewModel.Ncc.Destination = viewModel.SelectedImages[0];
-				}
+					viewModel.Destination?.Dispose();
+					//viewModel.Destination = Cv2.ImRead(viewModel.SelectedImages[0].ToString(), ImreadModes.Grayscale);
+					var thumbnail = (Thumbnail)viewModel.SelectedImages[0];
+					
+                    viewModel.Destination = new Mat(thumbnail.ImagePath);
+                    //viewModel.Ncc.Destination = viewModel.SelectedImages[0];
+                }
 			}
-		}
+        }
 
 		private void ZoomViewbox_OnMouseWheel(object sender, MouseWheelEventArgs e)
 		{

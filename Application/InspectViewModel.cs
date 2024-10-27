@@ -11,10 +11,18 @@ namespace MainApp
     {
 
         public event PropertyChangedEventHandler PropertyChanged;
+		
 
         protected virtual void OnPropertyChanged(string propertyName)
         {
             PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
         }
+
+		private InspectService _inspectService;
+
+		public InspectViewModel()
+        {
+			_inspectService = ServiceLocator.ResolveSingleton<InspectService>();
+		}
     }
 }

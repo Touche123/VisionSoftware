@@ -24,7 +24,9 @@ namespace MainApp
 
 		public InspectService()
         {
-			_inspectModel.PropertyChanged += InspectModel_PropertyChanged;
+            InspectModel = new InspectModel();
+            InspectModel.Tools.Add(new PatternTool());
+            _inspectModel.PropertyChanged += InspectModel_PropertyChanged;
 		}
 
 

@@ -31,9 +31,20 @@ namespace MainApp
 	public class Thumbnail : ViewModelBase
 	{
 		private string _imagePath;
+		private string _imageName;
 		private BitmapImage _image;
 
-		public string ImagePath
+        public string ImageName
+        {
+            get { return _imageName; }
+            set
+            {
+                _imageName = value;
+                OnPropertyChanged(nameof(ImageName));
+            }
+        }
+
+        public string ImagePath
 		{
 			get { return _imagePath; }
 			set 
@@ -76,7 +87,13 @@ namespace MainApp
 			}
 		}
 
-		private readonly InspectService _inspectService;
+		public ObservableCollection<ITool> Tools
+		{
+			get { return _inspectService.InspectModel.Tools; }
+			set { _inspectService.InspectModel.Tools = value; }
+		}
+
+		private InspectService _inspectService;
 
 		private void InspectService_PropertyChanged(object sender, PropertyChangedEventArgs e)
 		{
@@ -85,7 +102,7 @@ namespace MainApp
 
         public MainWindowViewModel()
         {
-
+			
 			_inspectService = ServiceLocator.ResolveSingleton<InspectService>();
 			_inspectService.PropertyChanged += InspectService_PropertyChanged;
 
@@ -98,7 +115,7 @@ namespace MainApp
             Thumbnails = new ObservableCollection<Thumbnail>();
             SelectedImages = new ObservableCollection<object>();
             MenuSelectCommand = new DelegateCommand<string>(MenuSelectCommandExecute);
-            LoadImagesFromDirectory("C:\\dev\\c#\\Vision Software\\Application\\bin\\Debug\\net6.0-windows\\assets\\images\\Cognex Block Images");
+            LoadImagesFromDirectory("D:\\dev\\c#\\Vision Software\\Application\\bin\\Debug\\net6.0-windows\\assets\\images\\Cognex Block Images");
             AllocConsole();
 			ZoomViewboxWidth = 100;
 			ZoomViewboxHeight = 100;
@@ -175,7 +192,7 @@ namespace MainApp
 					ToolContent = new UserControl_Image();
 					break;
 				case "inspect":
-					ToolContent = new UserControl_Inspect(Destination);
+					ToolContent = new UserControl_Inspect(this, Destination);
 					break;
 
 				default:
@@ -337,7 +354,9 @@ namespace MainApp
 				foreach (string imagePath in imageFiles)
 				{
 					Thumbnail thumbnail = new Thumbnail();
-					thumbnail.ImagePath = Path.GetFileName(imagePath);
+					thumbnail.ImagePath = imagePath;
+					thumbnail.ImageName = Path.GetFileName(imagePath);
+                    //thumbnail.ImagePath = Path.GetFileName(imagePath);
 					thumbnail.Image = CreateThumbnail(imagePath, 200, 150); // Create a thumbnail
 					//BitmapImage thumbnail = CreateThumbnail(imagePath, 200, 150); // Create a thumbnail
 					Thumbnails.Add(thumbnail);

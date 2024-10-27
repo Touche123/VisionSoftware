@@ -15,6 +15,7 @@ using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
 using System.Windows.Shapes;
+using Tensorflow.Contexts;
 
 namespace MainApp
 {
@@ -46,9 +47,10 @@ namespace MainApp
 		DependencyProperty.Register("ContentControl", typeof(ContentControl), typeof(UserControl_Inspect));
 
 		private readonly IService _inspectService;
-		public UserControl_Inspect(Mat destination)
+		public UserControl_Inspect(MainWindowViewModel model, Mat destination)
         {
             InitializeComponent();
+			
 			_inspectService = ServiceLocator.ResolveSingleton<InspectService>();
 			_destination = destination;
 			ContentControl = new UserControl_Inspect_Hierarchy(this);

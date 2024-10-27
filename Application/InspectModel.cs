@@ -23,7 +23,7 @@ namespace MainApp
 		}
 	}
 
-	public class InspectModel : BindableBase
+	public class InspectModel 
 	{
 		private ITool _selectedTool;
 		public ITool SelectedTool
@@ -56,7 +56,6 @@ namespace MainApp
 		public void AddTool()
         {
             Tools.Add(new PatternTool());
-			OnPropertyChanged(nameof(Tools));
 		}
 
 		protected virtual void OnPropertyChanged(string propertyName)
