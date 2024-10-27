@@ -10,10 +10,12 @@
         Title="MainWindow" Height="900" Width="1600" MouseWheel="ZoomViewbox_OnMouseWheel">
     <Window.Resources>
         <local:BitmapSourceConvert x:Key="BitmapSourceConvert"/>
+        <BooleanToVisibilityConverter x:Key="BoolToVisibilityConverter" />
     </Window.Resources>
     <Window.DataContext>
         <local:MainWindowViewModel/>
     </Window.DataContext>
+    
 
     <Grid>
         <Grid.ColumnDefinitions>
@@ -110,20 +112,25 @@
                                     MouseUp="OverlayCanvas_MouseUp">
 
                                 <!-- Rectangle to manipulate -->
-                                <Rectangle x:Name="ManipulatableRectangle" 
+                                <Rectangle x:Name="ManipulatableRectangle" RenderTransformOrigin="0.5, 0.5" 
                                Stroke="Blue" 
                                StrokeThickness="2" 
                                 Fill="#80FF0000"
-                               Visibility="Visible" 
-                               MouseDown="Rectangle_MouseDown"/>
+                               MouseDown="Rectangle_MouseDown" Visibility="{Binding InspectService.RectangleVisible, Converter={StaticResource BoolToVisibilityConverter}}"/>
 
                                 <!-- Resize Handles -->
-                               <Rectangle x:Name="HandleBottomRight" 
-                               Width="10" Height="10" 
-                               Fill="Red" 
-                               MouseMove="Handle_MouseMove" 
-                               MouseLeave="Handle_MouseLeave" 
-                               MouseDown="Handle_MouseDown" />
+                                <!-- Resize Handles -->
+                                <Rectangle x:Name="HandleTopLeft" Width="10" Height="10" Fill="Red" MouseMove="Handle_MouseMove" MouseLeave="Handle_MouseLeave" MouseDown="Handle_MouseDown" Visibility="{Binding InspectService.RectangleVisible, Converter={StaticResource BoolToVisibilityConverter}}"/>
+                                <Rectangle x:Name="HandleTopRight" Width="10" Height="10" Fill="Red" MouseMove="Handle_MouseMove" MouseLeave="Handle_MouseLeave" MouseDown="Handle_MouseDown" Visibility="{Binding InspectService.RectangleVisible, Converter={StaticResource BoolToVisibilityConverter}}"/>
+                                <Rectangle x:Name="HandleBottomLeft" Width="10" Height="10" Fill="Red" MouseMove="Handle_MouseMove" MouseLeave="Handle_MouseLeave" MouseDown="Handle_MouseDown" Visibility="{Binding InspectService.RectangleVisible, Converter={StaticResource BoolToVisibilityConverter}}"/>
+                                <Rectangle x:Name="HandleBottomRight" Width="10" Height="10" Fill="Red" MouseMove="Handle_MouseMove" MouseLeave="Handle_MouseLeave" MouseDown="Handle_MouseDown" Visibility="{Binding InspectService.RectangleVisible, Converter={StaticResource BoolToVisibilityConverter}}"/>
+
+                                <!-- Rotation Handle -->
+                                <Ellipse x:Name="RotationHandle" Width="20" Height="20" Fill="Green" MouseMove="RotationHandle_MouseMove" MouseLeave="Handle_MouseLeave" MouseDown="RotationHandle_MouseDown" Visibility="{Binding InspectService.RectangleVisible, Converter={StaticResource BoolToVisibilityConverter}}"/>
+
+                                <!-- Rotation Icon in Handle -->
+                                <TextBlock Text="⟳" FontSize="38" HorizontalAlignment="Center" VerticalAlignment="Center"
+                                             Canvas.Left="180" Canvas.Top="120" Margin="3,3,0,0" Visibility="{Binding InspectService.RectangleVisible, Converter={StaticResource BoolToVisibilityConverter}}"/>
                             </Canvas>
                         </Grid>
                     </Viewbox>

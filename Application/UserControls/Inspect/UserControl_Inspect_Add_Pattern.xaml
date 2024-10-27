@@ -44,6 +44,20 @@
                 <TextBlock Grid.Row="2" Text="Search shape" VerticalAlignment="Center"/>
                 <ComboBox Grid.Row="2" Grid.Column="1" Margin="5,0,0,0"/>
             </Grid>
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*" />
+                    <!-- Takes up all available space -->
+                    <ColumnDefinition Width="Auto" />
+                    <!-- Only takes as much space as needed for buttons -->
+                </Grid.ColumnDefinitions>
+
+                <!-- Buttons aligned to the right within the second column -->
+                <StackPanel Grid.Column="1" Orientation="Horizontal" HorizontalAlignment="Right">
+                    <Button Width="Auto" Height="Auto" Margin="5,0" Click="Button_Ok_Click">Ok</Button>
+                    <Button Width="Auto" Height="Auto" Margin="5,0" Click="Button_Cancel_Click">Cancel</Button>
+                </StackPanel>
+            </Grid>
         </StackPanel>
     </Grid>
 </UserControl>

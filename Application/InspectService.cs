@@ -16,6 +16,19 @@ namespace MainApp
 
 		public event PropertyChangedEventHandler? PropertyChanged;
 
+        //public bool RectangleVisible { get; set; } = false;
+        private bool _rectangleVisible = false;
+        public bool RectangleVisible
+        {
+            get { return _rectangleVisible; }
+            set
+            {
+                _rectangleVisible = value;
+
+                OnPropertyChanged(nameof(RectangleVisible));
+            }
+        }
+
         private Mat _destination;
         public Mat Destination
         {
