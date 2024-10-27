@@ -95,14 +95,40 @@
                 </Grid.RowDefinitions>
                 <ScrollViewer Grid.Row="0" HorizontalScrollBarVisibility="Auto" VerticalScrollBarVisibility="Auto" CanContentScroll="True">
                     <Viewbox Width="{Binding ZoomViewboxWidth}" Height="{Binding ZoomViewboxHeight}" MouseWheel="ZoomViewbox_OnMouseWheel">
-                        <Canvas Width="{Binding InspectService.Destination.Width}" Height="{Binding InspectService.Destination.Height}">
-                            <Canvas.Background>
-                                <ImageBrush Stretch="UniformToFill" ImageSource="{Binding InspectService.Destination, Converter={StaticResource BitmapSourceConvert}}" />
-                            </Canvas.Background>
-                        </Canvas>
+                        <Grid>
+                            <!-- Background Canvas for the Image -->
+                            <Canvas Width="{Binding InspectService.Destination.Width}" Height="{Binding InspectService.Destination.Height}">
+                                <Canvas.Background>
+                                    <ImageBrush Stretch="UniformToFill" ImageSource="{Binding InspectService.Destination, Converter={StaticResource BitmapSourceConvert}}" />
+                                </Canvas.Background>
+                            </Canvas>
+
+                            <!-- Overlay Canvas for Drawing Graphics -->
+                            <Canvas x:Name="OverlayCanvas" Width="{Binding InspectService.Destination.Width}" Height="{Binding InspectService.Destination.Height}" Background="Transparent" 
+                                    MouseDown="OverlayCanvas_MouseDown"
+                                    MouseMove="OverlayCanvas_MouseMove"
+                                    MouseUp="OverlayCanvas_MouseUp">
+
+                                <!-- Rectangle to manipulate -->
+                                <Rectangle x:Name="ManipulatableRectangle" 
+                               Stroke="Blue" 
+                               StrokeThickness="2" 
+                                Fill="#80FF0000"
+                               Visibility="Visible" 
+                               MouseDown="Rectangle_MouseDown"/>
+
+                                <!-- Resize Handles -->
+                               <Rectangle x:Name="HandleBottomRight" 
+                               Width="10" Height="10" 
+                               Fill="Red" 
+                               MouseMove="Handle_MouseMove" 
+                               MouseLeave="Handle_MouseLeave" 
+                               MouseDown="Handle_MouseDown" />
+                            </Canvas>
+                        </Grid>
                     </Viewbox>
                 </ScrollViewer>
-            
+
                 <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Auto">
                     <ListBox ItemsSource="{Binding Thumbnails}" SelectionMode="Extended"
                      SelectionChanged="ListBox_SelectionChanged">
@@ -132,7 +158,7 @@
                                         </Image.Style>
                                     </Image>
                                 </Grid>
-                                
+
                             </DataTemplate>
                         </ListBox.ItemTemplate>
                     </ListBox>
@@ -162,7 +188,7 @@
                     </Grid.ColumnDefinitions>
                 </Grid>
                 <ContentControl x:Name="bla" Grid.Row="0" Content="{Binding ToolContent}">
-                    
+
                 </ContentControl>
                 <Button Grid.Row="1" Content="Load Template" Command="{Binding LoadCommand}" CommandParameter="template"></Button>
                 <Button Grid.Row="1" Content="Load Destination" Command="{Binding LoadCommand}" CommandParameter="source"></Button>
@@ -173,5 +199,5 @@
             <Label>Status</Label>
         </Grid>
     </Grid>
-    
+
 </Window>
