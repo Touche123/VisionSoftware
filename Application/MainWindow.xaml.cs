@@ -2,6 +2,7 @@
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.Drawing;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -14,6 +15,7 @@ using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
 using System.Windows.Shapes;
+using Tensorflow.Contexts;
 using static Tensorflow.GraphTransferInfo.Types;
 
 namespace MainApp
@@ -34,11 +36,13 @@ namespace MainApp
         private bool _isRotating;
         private const double HandleSize = 10; // Size of the resize handles
         private double _rotationAngle = 0; // Current rotation angle
-
+        private readonly InspectService _inspectService;
         public MainWindow()
         {
             InitializeComponent();
             InitializeRectangle();
+
+            _inspectService = ServiceLocator.ResolveSingleton<InspectService>();
         }
 
         private void InitializeRectangle()
@@ -184,7 +188,7 @@ namespace MainApp
             {
                 // Resize the rectangle based on the handle being dragged
                 System.Windows.Point currentPosition = e.GetPosition(OverlayCanvas);
-                Rectangle handle = (Rectangle)Mouse.Captured;
+                System.Windows.Shapes.Rectangle handle = (System.Windows.Shapes.Rectangle)Mouse.Captured;
 
                 if (handle == HandleTopLeft)
                 {
@@ -228,6 +232,37 @@ namespace MainApp
 
                 PositionHandles(); // Update handle positions after resizing
             }
+            System.Windows.Point position = ManipulatableRectangle.TranslatePoint(new System.Windows.Point(0, 0), OverlayCanvas);
+
+            RotatedRect rect = ConvertToRotatedRect(ManipulatableRectangle, OverlayCanvas);
+
+            _inspectService.InspectModel.Roi = rect;
+
+        }
+
+        public RotatedRect ConvertToRotatedRect(System.Windows.Shapes.Rectangle myRectangle, UIElement containerElement)
+        {
+            // 1. Get the actual width and height of the Rectangle
+            double width = myRectangle.ActualWidth;
+            double height = myRectangle.ActualHeight;
+
+            // 2. Calculate the center point
+            System.Windows.Point topLeft = myRectangle.TranslatePoint(new System.Windows.Point(0, 0), containerElement);
+            System.Windows.Point center = new System.Windows.Point(topLeft.X + width / 2, topLeft.Y + height / 2);
+
+            // 3. Get the rotation angle (assume RotateTransform is applied to RenderTransform)
+            double angle = 0;
+            if (myRectangle.RenderTransform is RotateTransform rotateTransform)
+            {
+                angle = rotateTransform.Angle;
+            }
+
+            // 4. Create the RotatedRect
+            return new RotatedRect(
+                new Point2f((float)center.X, (float)center.Y), // Center point
+                new Size2f((float)width, (float)height),       // Size
+                (float)angle                                   // Angle in degrees
+            );
         }
         private void OverlayCanvas_MouseUp(object sender, MouseButtonEventArgs e)
         {
@@ -241,7 +276,7 @@ namespace MainApp
         {
             return HandleTopLeft.IsMouseOver || HandleTopRight.IsMouseOver || HandleBottomLeft.IsMouseOver || HandleBottomRight.IsMouseOver;
         }
-        private bool IsMouseOverHandle(System.Windows.Point mousePosition, Rectangle handle)
+        private bool IsMouseOverHandle(System.Windows.Point mousePosition, System.Windows.Shapes.Rectangle handle)
         {
             double left = Canvas.GetLeft(handle);
             double top = Canvas.GetTop(handle);
@@ -252,7 +287,7 @@ namespace MainApp
         // Resize handle events
         private void Handle_MouseMove(object sender, MouseEventArgs e)
         {
-            if (sender is Rectangle)
+            if (sender is System.Windows.Shapes.Rectangle)
             {
                 Cursor = Cursors.SizeAll; // Change cursor to indicate resizing
             }
@@ -266,7 +301,7 @@ namespace MainApp
         private void Handle_MouseDown(object sender, MouseButtonEventArgs e)
         {
             _isResizing = true; // Start resizing
-            Mouse.Capture((Rectangle)sender); // Capture mouse to the handle
+            Mouse.Capture((System.Windows.Shapes.Rectangle)sender); // Capture mouse to the handle
         }
 
         // Rotation handle events

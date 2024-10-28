@@ -1,4 +1,6 @@
-﻿using Prism.Mvvm;
+﻿using OpenCvSharp;
+using Prism.Mvvm;
+using SharpCV;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
@@ -21,12 +23,24 @@ namespace MainApp
 		{
 			get { return "Pattern"; }
 		}
+		public OpenCvSharp.Mat Template { get; set; }
 	}
 
 	public class InspectModel 
 	{
-		private ITool _selectedTool;
-		public ITool SelectedTool
+        OpenCvSharp.RotatedRect _roi;
+		public OpenCvSharp.RotatedRect Roi
+		{
+			get { return _roi; }
+			set
+			{
+				_roi = value;
+				OnPropertyChanged(nameof(Roi));
+			}
+		}
+
+        private ITool _selectedTool;
+        public ITool SelectedTool
 		{
 			get { return _selectedTool; }
 			set 
